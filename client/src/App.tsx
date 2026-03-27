@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
@@ -7,6 +8,7 @@ import AccountModal from './components/AccountModal';
 
 function App() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,7 +56,7 @@ function App() {
       <header className="header">
         <nav className="nav">
           <div className="nav-left">
-            <button className="nav-btn">Галерея</button>
+            <button className="nav-btn" onClick={() => navigate('/gallery')}>Галерея</button>
             <button className="nav-btn" onClick={() => document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })}>Контакты</button>
           </div>
           <button className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>

@@ -212,6 +212,22 @@ body {
   margin: 0 auto;
 }
 
+.gallery-page {
+  padding-top: 40px;
+}
+
+.gallery-item--video {
+  cursor: default;
+}
+
+.gallery-item--video:hover {
+  transform: none;
+}
+
+.gallery-item--video video {
+  object-fit: cover;
+}
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
