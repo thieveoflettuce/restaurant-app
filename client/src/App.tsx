@@ -1,10 +1,52 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './App.css';
+import { useAuth } from './context/AuthContext';
+import AuthModal from './components/AuthModal';
+import AccountModal from './components/AccountModal';
 
 function App() {
+  const { user, token } = useAuth();
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+
+  const [bookingForm, setBookingForm] = useState({
+    date: '', time: '', guests: '', name: user?.name || '', phone: user?.phone || ''
+  });
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookingError, setBookingError] = useState('');
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBookingError('');
+    try {
+      await axios.post('/api/bookings', bookingForm, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      setBookingSuccess(true);
+      setBookingForm({ date: '', time: '', guests: '', name: '', phone: '' });
+      setTimeout(() => {
+        setBookingSuccess(false);
+        setIsBookingOpen(false);
+      }, 2000);
+    } catch (err: any) {
+      setBookingError(err.response?.data?.error || 'Ошибка при бронировании');
+    }
+  };
+
+  const openBooking = () => {
+    setBookingForm({
+      date: '', time: '', guests: '',
+      name: user?.name || '',
+      phone: user?.phone || ''
+    });
+    setBookingSuccess(false);
+    setBookingError('');
+    setIsBookingOpen(true);
+  };
 
   return (
     <div className="app">
@@ -12,13 +54,21 @@ function App() {
       <header className="header">
         <nav className="nav">
           <button className="nav-btn">Главная</button>
+          {user ? (
+            <button className="nav-btn nav-account-btn" onClick={() => setIsAccountOpen(true)}>
+              <span className="nav-account-avatar">{user.name.charAt(0).toUpperCase()}</span>
+              {user.name}
+            </button>
+          ) : (
+            <button className="nav-btn" onClick={() => setIsAuthOpen(true)}>Войти</button>
+          )}
           <button className="nav-btn">О нас</button>
           <div className="logo">Прованс</div>
           <button className="nav-btn">Галерея</button>
           <button className="nav-btn">Контакты</button>
-          <a 
-  href="https://just-eat.by/provence-gomel" 
-  target="_blank" 
+          <a
+  href="https://just-eat.by/provence-gomel"
+  target="_blank"
   rel="noopener noreferrer"
   className="delivery-link"
 >
@@ -35,14 +85,23 @@ function App() {
           <button className="mobile-menu-btn">О нас</button>
           <button className="mobile-menu-btn">Галерея</button>
           <button className="mobile-menu-btn">Контакты</button>
-          <a 
-            href="https://just-eat.by/provence-gomel" 
-            target="_blank" 
+          <a
+            href="https://just-eat.by/provence-gomel"
+            target="_blank"
             rel="noopener noreferrer"
             className="mobile-delivery"
           >
             Доставка
           </a>
+          {user ? (
+            <button className="mobile-menu-btn" onClick={() => { setIsAccountOpen(true); setIsMenuOpen(false); }}>
+              Личный кабинет
+            </button>
+          ) : (
+            <button className="mobile-menu-btn" onClick={() => { setIsAuthOpen(true); setIsMenuOpen(false); }}>
+              Войти
+            </button>
+          )}
         </div>
       )}
 
@@ -55,7 +114,7 @@ function App() {
             <span className="hero-breakfast">Завтраки СБ-ВС 12:00-16:00</span>
             <span className="hero-lunch">Бизнес-ланчи Пн-Пт 12:00-16:00</span>
           </p>
-          <button className="hero-btn" onClick={() => setIsBookingOpen(true)}>
+          <button className="hero-btn" onClick={openBooking}>
             Забронировать столик
           </button>
         </div>
@@ -104,9 +163,9 @@ function App() {
             </div>
             <div className="contact-item">
               <span className="contact-icon">📷</span>
-              <a 
-                href="https://www.instagram.com/provansgomel/?hl=ru" 
-                target="_blank" 
+              <a
+                href="https://www.instagram.com/provansgomel/?hl=ru"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="contact-link"
               >
@@ -115,9 +174,9 @@ function App() {
             </div>
             <div className="contact-item">
               <span className="contact-icon">🚚</span>
-              <a 
-                href="https://just-eat.by/provence-gomel" 
-                target="_blank" 
+              <a
+                href="https://just-eat.by/provence-gomel"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="contact-link"
               >
@@ -177,36 +236,65 @@ function App() {
         <div className="modal-overlay" onClick={() => setIsBookingOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">Забронировать столик</h3>
-            <form className="modal-form">
-              <input type="date" className="modal-input" required />
-              <input type="time" className="modal-input" required />
-              <input 
-                type="number" 
-                placeholder="Количество гостей" 
-                className="modal-input" 
-                min="1" 
-                max="20"
-                required 
-              />
-              <input 
-                type="text" 
-                placeholder="Ваше имя" 
-                className="modal-input" 
-                required 
-              />
-              <input 
-                type="tel" 
-                placeholder="Телефон" 
-                className="modal-input" 
-                required 
-              />
-              <button type="submit" className="modal-submit">
-                Забронировать
-              </button>
-            </form>
-            <button className="modal-close" onClick={() => setIsBookingOpen(false)}>
-              ×
-            </button>
+            {bookingSuccess ? (
+              <p className="booking-success">Столик успешно забронирован!</p>
+            ) : (
+              <form className="modal-form" onSubmit={handleBookingSubmit}>
+                <input
+                  type="date"
+                  className="modal-input"
+                  value={bookingForm.date}
+                  onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })}
+                  required
+                />
+                <input
+                  type="time"
+                  className="modal-input"
+                  value={bookingForm.time}
+                  onChange={e => setBookingForm({ ...bookingForm, time: e.target.value })}
+                  required
+                />
+                <input
+                  type="number"
+                  placeholder="Количество гостей"
+                  className="modal-input"
+                  min="1"
+                  max="20"
+                  value={bookingForm.guests}
+                  onChange={e => setBookingForm({ ...bookingForm, guests: e.target.value })}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Ваше имя"
+                  className="modal-input"
+                  value={bookingForm.name}
+                  onChange={e => setBookingForm({ ...bookingForm, name: e.target.value })}
+                  required
+                />
+                <input
+                  type="tel"
+                  placeholder="Телефон"
+                  className="modal-input"
+                  value={bookingForm.phone}
+                  onChange={e => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                  required
+                />
+                {bookingError && <p className="auth-error">{bookingError}</p>}
+                {!user && (
+                  <p className="booking-hint">
+                    <button type="button" className="booking-hint-link" onClick={() => { setIsBookingOpen(false); setIsAuthOpen(true); }}>
+                      Войдите
+                    </button>
+                    {' '}чтобы сохранить бронирование в личном кабинете
+                  </p>
+                )}
+                <button type="submit" className="modal-submit">
+                  Забронировать
+                </button>
+              </form>
+            )}
+            <button className="modal-close" onClick={() => setIsBookingOpen(false)}>×</button>
           </div>
         </div>
       )}
@@ -221,12 +309,16 @@ function App() {
               className="modal-image"
               onClick={(e) => e.stopPropagation()}
             />
-            <button className="modal-close" onClick={() => setSelectedImage(null)}>
-              ×
-            </button>
+            <button className="modal-close" onClick={() => setSelectedImage(null)}>×</button>
           </div>
         </div>
       )}
+
+      {/* Модалка авторизации */}
+      {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
+
+      {/* Модалка личного кабинета */}
+      {isAccountOpen && <AccountModal onClose={() => setIsAccountOpen(false)} />}
     </div>
   );
 }
