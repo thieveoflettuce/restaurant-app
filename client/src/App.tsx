@@ -53,27 +53,31 @@ function App() {
       {/* Шапка */}
       <header className="header">
         <nav className="nav">
-          <button className="nav-btn">Главная</button>
-          {user ? (
-            <button className="nav-btn nav-account-btn" onClick={() => setIsAccountOpen(true)}>
-              <span className="nav-account-avatar">{user.name.charAt(0).toUpperCase()}</span>
-              {user.name}
-            </button>
-          ) : (
-            <button className="nav-btn" onClick={() => setIsAuthOpen(true)}>Войти</button>
-          )}
-          <button className="nav-btn">О нас</button>
-          <div className="logo">Прованс</div>
-          <button className="nav-btn">Галерея</button>
-          <button className="nav-btn">Контакты</button>
-          <a
-  href="https://just-eat.by/provence-gomel"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="delivery-link"
->
-  Доставка
-</a>
+          <div className="nav-left">
+            <button className="nav-btn">Галерея</button>
+            <button className="nav-btn" onClick={() => document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })}>Контакты</button>
+          </div>
+          <button className="logo" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            Прованс
+          </button>
+          <div className="nav-right">
+            <a
+              href="https://just-eat.by/provence-gomel"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="delivery-link"
+            >
+              Доставка
+            </a>
+            {user ? (
+              <button className="nav-btn nav-account-btn" onClick={() => setIsAccountOpen(true)}>
+                <span className="nav-account-avatar">{user.name.charAt(0).toUpperCase()}</span>
+                {user.name}
+              </button>
+            ) : (
+              <button className="nav-btn" onClick={() => setIsAuthOpen(true)}>Войти</button>
+            )}
+          </div>
         </nav>
         <button className="burger" onClick={() => setIsMenuOpen(!isMenuOpen)}>☰</button>
       </header>
@@ -137,7 +141,7 @@ function App() {
       </section>
 
       {/* Контакты */}
-      <section className="contacts">
+      <section className="contacts" id="contacts">
         <h2 className="section-title">Контакты</h2>
         <div className="contacts-container">
           <div className="contacts-info">
