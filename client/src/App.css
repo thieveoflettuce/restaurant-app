@@ -456,6 +456,41 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* Стили для кнопки Доставка (глобально) */
+.delivery-link {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #3E3A36;
+  text-decoration: none;
+  padding: 8px 0;
+  position: relative;
+  transition: color 0.3s;
+}
+
+.delivery-link:visited {
+  color: #3E3A36;
+}
+
+.delivery-link:hover {
+  color: #9BAB8F;
+}
+
+.delivery-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #9BAB8F;
+  transition: width 0.3s;
+}
+
+.delivery-link:hover::after {
+  width: 100%;
+}
+
 /* Адаптация */
 @media (max-width: 768px) {
   .header {
