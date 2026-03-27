@@ -683,6 +683,64 @@ body {
   padding: 0;
 }
 
+/* Отзывы */
+.review-modal {
+  max-width: 440px;
+  text-align: center;
+}
+
+.review-subtitle {
+  color: #9B8E81;
+  font-size: 14px;
+  margin: -16px 0 20px;
+}
+
+.review-stars {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 36px;
+  color: #D9C9B6;
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.star-btn.active {
+  color: #E8A838;
+}
+
+.star-btn:hover {
+  transform: scale(1.15);
+}
+
+.review-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.review-skip {
+  background: none;
+  border: none;
+  color: #9B8E81;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 8px;
+  text-decoration: underline;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.review-skip:hover {
+  color: #3E3A36;
+}
+
 /* Анимации */
 @keyframes fadeIn {
   from { opacity: 0; }

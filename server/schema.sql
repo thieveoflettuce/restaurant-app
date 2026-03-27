@@ -16,5 +16,15 @@ CREATE TABLE IF NOT EXISTS bookings (
   name VARCHAR(100) NOT NULL,
   phone VARCHAR(20) NOT NULL,
   status VARCHAR(20) DEFAULT 'pending',
+  reviewed BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+  id SERIAL PRIMARY KEY,
+  booking_id INTEGER REFERENCES bookings(id) ON DELETE CASCADE,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  text TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );

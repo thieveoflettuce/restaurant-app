@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
+import ReviewModal from './components/ReviewModal';
 
 function App() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
+  const [pendingReview, setPendingReview] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user || !token) return;
+    axios.get('/api/reviews/pending', { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => setPendingReview(res.data))
+      .catch(() => {});
+  }, [user, token]);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -324,6 +333,14 @@ function App() {
 
       {/* Модалка личного кабинета */}
       {isAccountOpen && <AccountModal onClose={() => setIsAccountOpen(false)} />}
+
+      {/* Модалка отзыва */}
+      {pendingReview && (
+        <ReviewModal
+          booking={pendingReview}
+          onDone={() => setPendingReview(null)}
+        />
+      )}
     </div>
   );
 }
