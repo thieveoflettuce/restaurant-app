@@ -1,0 +1,574 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: #F5F0E7;
+  color: #3E3A36;
+}
+
+/* Шапка */
+.header {
+  padding: 20px 40px;
+  background-color: rgba(245, 240, 231, 0.95);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(158, 142, 125, 0.2);
+}
+
+.nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+}
+
+.nav-btn {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #3E3A36;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  position: relative;
+  transition: color 0.3s;
+}
+
+.nav-btn:hover {
+  color: #9BAB8F;
+}
+
+.nav-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #9BAB8F;
+  transition: width 0.3s;
+}
+
+.nav-btn:hover::after {
+  width: 100%;
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #9BAB8F;
+  margin: 0 30px;
+  letter-spacing: 1px;
+}
+
+.burger {
+  display: none;
+  font-size: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #3E3A36;
+}
+
+/* Мобильное меню */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 80px;
+  left: 0;
+  right: 0;
+  background-color: #F5F0E7;
+  padding: 20px;
+  flex-direction: column;
+  gap: 15px;
+  border-bottom: 1px solid rgba(158, 142, 125, 0.2);
+  z-index: 99;
+}
+
+.mobile-menu-btn {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 18px;
+  padding: 15px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(158, 142, 125, 0.2);
+  cursor: pointer;
+  color: #3E3A36;
+  text-align: left;
+}
+
+/* Герой */
+.hero {
+  height: 90vh;
+  background: linear-gradient(135deg, #9BAB8F 0%, #C17B5E 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  position: relative;
+}
+
+.hero-overlay {
+  max-width: 800px;
+  padding: 0 20px;
+}
+
+.hero-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 64px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle {
+  font-size: 24px;
+  font-weight: 300;
+  margin-bottom: 30px;
+  line-height: 1.6;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.hero-breakfast {
+  display: block;
+  font-size: 18px;
+  margin-top: 10px;
+  color: #FFE4B5;
+  font-weight: 400;
+}
+
+.hero-btn {
+  padding: 18px 45px;
+  background-color: #9BAB8F;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(155, 171, 143, 0.4);
+}
+
+.hero-btn:hover {
+  background-color: #C17B5E;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(193, 123, 94, 0.4);
+}
+
+/* Заголовки секций */
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 600;
+  color: #9BAB8F;
+  text-align: center;
+  margin-bottom: 50px;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 2px;
+  background-color: #C17B5E;
+  margin: 20px auto 0;
+}
+
+/* Галерея */
+.gallery {
+  padding: 80px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.gallery-item:hover {
+  transform: translateY(-5px);
+}
+
+.gallery-img {
+  height: 280px;
+  background-color: #D9C9B6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #3E3A36;
+  background: linear-gradient(135deg, #D9C9B6 0%, #C17B5E 100%);
+  transition: transform 0.3s;
+}
+
+.gallery-item:hover .gallery-img {
+  transform: scale(1.05);
+}
+
+/* Контакты */
+.contacts {
+  padding: 80px 40px;
+  background-color: #FFFFFF;
+}
+
+.contacts-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  align-items: start;
+}
+
+.contacts-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.contact-icon {
+  font-size: 24px;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F5F0E7;
+  border-radius: 50%;
+  color: #9BAB8F;
+}
+
+.contact-link {
+  color: #3E3A36;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.contact-link:hover {
+  color: #9BAB8F;
+}
+
+.breakfast-note {
+  color: #C17B5E;
+  font-weight: 500;
+}
+
+.map-placeholder {
+  height: 300px;
+  background-color: #D9C9B6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #3E3A36;
+  background: linear-gradient(135deg, #D9C9B6 0%, #9BAB8F 100%);
+}
+
+/* Подвал */
+.footer {
+  background-color: #3E3A36;
+  color: #F5F0E7;
+  padding: 40px;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-copy {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.footer-social {
+  display: flex;
+  gap: 20px;
+}
+
+.social-btn {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(245, 240, 231, 0.1);
+  border: 1px solid rgba(245, 240, 231, 0.3);
+  border-radius: 50%;
+  color: #F5F0E7;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.social-btn:hover {
+  background-color: #9BAB8F;
+  border-color: #9BAB8F;
+  transform: translateY(-3px);
+}
+
+/* Модальные окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s;
+}
+
+.modal-content {
+  background: #F5F0E7;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  animation: slideUp 0.3s;
+}
+
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: #9BAB8F;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.modal-input {
+  padding: 15px;
+  border: 1px solid #D9C9B6;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'Montserrat', sans-serif;
+  background-color: white;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: #9BAB8F;
+}
+
+.modal-submit {
+  padding: 16px;
+  background-color: #9BAB8F;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.modal-submit:hover {
+  background-color: #C17B5E;
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  color: #3E3A36;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.modal-close:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.image-modal {
+  padding: 0;
+  background: none;
+  max-width: 90vw;
+}
+
+.modal-image {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 12px;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Адаптация */
+@media (max-width: 768px) {
+  .header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .nav {
+    display: none;
+  }
+  
+  .burger {
+    display: block;
+  }
+  
+  .mobile-menu {
+    display: flex;
+  }
+  
+  .hero-title {
+    font-size: 42px;
+  }
+  
+  .hero-subtitle {
+    font-size: 18px;
+  }
+  
+  .section-title {
+    font-size: 32px;
+  }
+  
+  .gallery {
+    padding: 40px 20px;
+  }
+  
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .contacts-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  
+  .contacts {
+    padding: 40px 20px;
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  .lunch-note {
+    color: #9BAB8F;
+    font-weight: 500;
+  }
+  
+  .hero-lunch {
+    display: block;
+    font-size: 18px;
+    margin-top: 5px;
+    color: #FFE4B5;
+    font-weight: 400;
+  }
+  /* Стили для кнопки Доставка */
+  .nav-btn, .delivery-link {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #3E3A36;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    position: relative;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  
+  .nav-btn:hover, .delivery-link:hover {
+    color: #9BAB8F;
+  }
+  
+  .nav-btn::after, .delivery-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #9BAB8F;
+    transition: width 0.3s;
+  }
+  
+  .nav-btn:hover::after, .delivery-link:hover::after {
+    width: 100%;
+  }
+  .mobile-delivery {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    padding: 15px;
+    color: #3E3A36;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(158, 142, 125, 0.2);
+    transition: color 0.3s;
+  }
+  
+  .mobile-delivery:hover {
+    color: #9BAB8F;
+    background-color: rgba(155, 171, 143, 0.05);
+  }
+}
