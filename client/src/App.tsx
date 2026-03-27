@@ -233,8 +233,8 @@ function App() {
 
       {/* Модалка бронирования */}
       {isBookingOpen && (
-        <div className="modal-overlay" onClick={() => setIsBookingOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onMouseDown={() => setIsBookingOpen(false)}>
+          <div className="modal-content" onMouseDown={(e) => e.stopPropagation()}>
             <h3 className="modal-title">Забронировать столик</h3>
             {bookingSuccess ? (
               <p className="booking-success">Столик успешно забронирован!</p>
@@ -301,13 +301,12 @@ function App() {
 
       {/* Модалка галереи */}
       {selectedImage && (
-        <div className="modal-overlay" onClick={() => setSelectedImage(null)}>
-          <div className="modal-content image-modal">
+        <div className="modal-overlay" onMouseDown={() => setSelectedImage(null)}>
+          <div className="modal-content image-modal" onMouseDown={(e) => e.stopPropagation()}>
             <img
               src={`/interior${selectedImage}.jpg`}
               alt={`Прованс фото ${selectedImage}`}
               className="modal-image"
-              onClick={(e) => e.stopPropagation()}
             />
             <button className="modal-close" onClick={() => setSelectedImage(null)}>×</button>
           </div>

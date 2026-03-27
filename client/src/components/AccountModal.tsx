@@ -46,8 +46,8 @@ export default function AccountModal({ onClose }: AccountModalProps) {
   const formatTime = (timeStr: string) => timeStr.slice(0, 5);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content account-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onMouseDown={onClose}>
+      <div className="modal-content account-modal" onMouseDown={(e) => e.stopPropagation()}>
         <h3 className="modal-title">Личный кабинет</h3>
 
         <div className="account-profile">
