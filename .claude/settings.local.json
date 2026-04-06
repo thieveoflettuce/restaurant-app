@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /f/Stuff/U4EBA/CURE SUCH/restaurant-app -type f -name .env*)"
+    ]
+  }
+}
