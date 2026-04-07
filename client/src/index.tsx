@@ -12,7 +12,7 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/restaurant-app">
       <AuthProvider>
         <Routes>
           <Route path="/" element={<App />} />
