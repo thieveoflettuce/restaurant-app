@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/restaurant-app/static/css/main.fe8291c4.css",
-    "main.js": "/restaurant-app/static/js/main.d01b1bb5.js",
+    "main.js": "/restaurant-app/static/js/main.dc75a355.js",
     "static/js/453.af205ec6.chunk.js": "/restaurant-app/static/js/453.af205ec6.chunk.js",
     "index.html": "/restaurant-app/index.html",
     "main.fe8291c4.css.map": "/restaurant-app/static/css/main.fe8291c4.css.map",
-    "main.d01b1bb5.js.map": "/restaurant-app/static/js/main.d01b1bb5.js.map",
+    "main.dc75a355.js.map": "/restaurant-app/static/js/main.dc75a355.js.map",
     "453.af205ec6.chunk.js.map": "/restaurant-app/static/js/453.af205ec6.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.fe8291c4.css",
-    "static/js/main.d01b1bb5.js"
+    "static/js/main.dc75a355.js"
   ]
 }
