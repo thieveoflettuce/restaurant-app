@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 interface Dish {
     id: number;
@@ -11,7 +11,7 @@ const DishList: React.FC = () => {
     const [dishes, setDishes] = useState<Dish[]>([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/dishes')
+        api.get('/api/dishes')
             .then(response => setDishes(response.data))
             .catch(error => console.error(error));
     }, []);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
 
 interface Booking {
@@ -28,7 +28,7 @@ export default function AccountModal({ onClose }: AccountModalProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('/api/bookings/my', { headers: { Authorization: `Bearer ${token}` } })
+    api.get('/api/bookings/my', { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setBookings(res.data))
       .finally(() => setLoading(false));
   }, [token]);

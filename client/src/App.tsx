@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from './api';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './context/AuthContext';
@@ -14,7 +14,7 @@ function App() {
 
   useEffect(() => {
     if (!user || !token) return;
-    axios.get('/api/reviews/pending', { headers: { Authorization: `Bearer ${token}` } })
+    api.get('/api/reviews/pending', { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setPendingReview(res.data))
       .catch(() => {});
   }, [user, token]);
@@ -34,7 +34,7 @@ function App() {
     e.preventDefault();
     setBookingError('');
     try {
-      await axios.post('/api/bookings', bookingForm, {
+      await api.post('/api/bookings', bookingForm, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       setBookingSuccess(true);

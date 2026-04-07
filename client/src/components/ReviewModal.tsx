@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
 
 interface Booking {
@@ -24,7 +24,7 @@ export default function ReviewModal({ booking, onDone }: ReviewModalProps) {
   const headers = { Authorization: `Bearer ${token}` };
 
   const handleSkip = async () => {
-    await axios.post(`/api/reviews/skip/${booking.id}`, {}, { headers });
+    await api.post(`/api/reviews/skip/${booking.id}`, {}, { headers });
     onDone();
   };
 
@@ -33,7 +33,7 @@ export default function ReviewModal({ booking, onDone }: ReviewModalProps) {
     if (!rating) return;
     setLoading(true);
     try {
-      await axios.post('/api/reviews', { booking_id: booking.id, rating, text }, { headers });
+      await api.post('/api/reviews', { booking_id: booking.id, rating, text }, { headers });
       onDone();
     } finally {
       setLoading(false);
