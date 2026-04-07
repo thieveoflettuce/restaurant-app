@@ -25,13 +25,13 @@ export default function GalleryPage() {
         <div className="gallery-grid">
           {PHOTOS.map(i => (
             <div key={`photo-${i}`} className="gallery-item" onClick={() => setSelectedImage(i)}>
-              <img src={`/interior${i}.jpg`} alt={`Интерьер ${i}`} className="gallery-img" />
+              <img src={`${process.env.PUBLIC_URL}/interior${i}.jpg`} alt={`Интерьер ${i}`} className="gallery-img" />
             </div>
           ))}
           {VIDEOS.map(i => (
             <div key={`video-${i}`} className="gallery-item gallery-item--video">
               <video
-                src={`/gallery${i}.mp4`}
+                src={`${process.env.PUBLIC_URL}/gallery${i}.mp4`}
                 className="gallery-img"
                 controls
                 muted

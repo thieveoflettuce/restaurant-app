@@ -145,7 +145,7 @@ function App() {
               className="gallery-item"
               onClick={() => setSelectedImage(i)}
             >
-              <img src={`/interior${i}.jpg`} alt={`Интерьер ${i}`} className="gallery-img" />
+              <img src={`${process.env.PUBLIC_URL}/interior${i}.jpg`} alt={`Интерьер ${i}`} className="gallery-img" />
             </div>
           ))}
         </div>
