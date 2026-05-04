@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
@@ -6,20 +6,60 @@ import GalleryPage from './pages/GalleryPage';
 import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ProvansPreloader from './components/ProvansPreloader';
+import { STROKE_PATHS } from './strokes-array';
+import logoSrc from './img/provans-cropped.png';
+import whiteLogoCropped from './img/white-logo-cropped.png';
+
+function RootShell() {
+  const [siteReady, setSiteReady] = useState(false);
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    if (document.readyState === 'complete') {
+      setSiteReady(true);
+      return;
+    }
+    const onLoad = () => setSiteReady(true);
+    window.addEventListener('load', onLoad);
+    return () => window.removeEventListener('load', onLoad);
+  }, []);
+
+  return (
+    <>
+      {!hidden && (
+        <ProvansPreloader
+          siteReady={siteReady}
+          onFinished={() => setHidden(true)}
+          duration={2800}
+          strokeWidth={130}
+          minDisplay={3000}
+          strokePaths={STROKE_PATHS}
+          background="cream"
+          logoSrc={logoSrc}
+          morphLogoSrc={whiteLogoCropped}
+          morphTargetSelector=".hero-title-image"
+          morphDuration={900}
+        />
+      )}
+      <BrowserRouter basename="/restaurant-app">
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </>
+  );
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <BrowserRouter basename="/restaurant-app">
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/gallery" element={<GalleryPage />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    <RootShell />
   </React.StrictMode>
 );
 

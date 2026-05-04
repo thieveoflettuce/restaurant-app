@@ -78,15 +78,19 @@ body {
 }
 
 .logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 700;
-  color: #9BAB8F;
-  letter-spacing: 1px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-image {
+  width: clamp(150px, 14vw, 220px);
+  height: auto;
+  display: block;
 }
 
 .burger {
@@ -143,11 +147,31 @@ body {
 }
 
 .hero-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 64px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  /* Фиксируем размер — h1 держит место в hero, даже когда внутренний span улетает в position: fixed */
+  width: min(60vw, 700px);
+  aspect-ratio: 3491 / 1187;
+  margin: 0 auto 20px;
+  position: relative;
+  /* выше шапки (z-index: 100), чтобы уменьшающееся лого ехало ПОВЕРХ хедера, не под ним */
+  z-index: 101;
+}
+
+.hero-title-image {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.hero-title-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .hero-subtitle {
@@ -809,7 +833,7 @@ body {
   }
   
   .hero-title {
-    font-size: 42px;
+    width: min(82vw, 560px);
   }
   
   .hero-subtitle {

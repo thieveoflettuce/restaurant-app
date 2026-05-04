@@ -1,46 +1,121 @@
-# Getting Started with Create React App
+Preloader для React-сайта
+Анимация написания логотипа «Прованс» как splash-экран. Прячется когда сайт загружен — но не раньше окончания анимации.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Файлы
+Скопируйте эти файлы в ваш проект (например, в src/components/preloader/):
 
-## Available Scripts
+ProvansPreloader.jsx
+Сам React-компонент. Управляет анимацией и fade-out.
+strokes-array.js
+Данные путей кисти (33 штриха). Подключается перед компонентом.
+provans-cropped.png
+Логотип без подписи «restaurant de la». Положите в public/ или импортируйте через bundler.
+Шаг 1 — Подключение
+Поскольку ProvansPreloader.jsx в текущем виде расчитан на загрузку через <script>-теги, в React-проекте с bundler'ом (Vite, CRA, Next) нужно слегка адаптировать. Вариант А (рекомендую) — переписать в ESM:
 
-In the project directory, you can run:
+// src/components/ProvansPreloader.jsx
+import { useEffect, useRef, useState } from 'react';
+import { STROKE_PATHS } from './strokes'; // см. шаг 2
+import logoUrl from './provans-cropped.png';
 
-### `npm start`
+export default function ProvansPreloader({
+  siteReady = false,
+  onFinished,
+  duration = 2800,
+  minDisplay,
+  fadeOut = 600,
+  background = 'cream',
+  tagline = 'restaurant de la',
+  strokeWidth = 130,
+}) {
+  /* ... тело компонента из ProvansPreloader.jsx ... */
+  /* замените src на logoUrl */
+}
+Шаг 2 — Подготовка путей
+Файл strokes-array.js сейчас определяет глобальную const STROKE_PATHS. Для bundler'а конвертируйте в ESM-экспорт:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+// src/components/strokes.js
+export const STROKE_PATHS = [
+  "M 971.4 252.7 L 965.7 ...",
+  "M 1052.9 225.7 L 1050.0 ...",
+  // ... остальные штрихи (всего 33)
+];
+Просто оберните содержимое strokes-array.js в export const STROKE_PATHS = [...] вместо const.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Шаг 3 — Использование в App
+// src/App.jsx
+import { useEffect, useState } from 'react';
+import ProvansPreloader from './components/ProvansPreloader';
 
-### `npm test`
+export default function App() {
+  const [siteReady, setSiteReady] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  useEffect(() => {
+    if (document.readyState === 'complete') {
+      setSiteReady(true);
+    } else {
+      const onLoad = () => setSiteReady(true);
+      window.addEventListener('load', onLoad);
+      return () => window.removeEventListener('load', onLoad);
+    }
+  }, []);
 
-### `npm run build`
+  return (
+    <>
+      {!hidden && (
+        <ProvansPreloader
+          siteReady={siteReady}
+          onFinished={() => setHidden(true)}
+        />
+      )}
+      <YourSiteRoot />
+    </>
+  );
+}
+Почему так: компонент сам ждёт двух условий — окончание анимации и готовность сайта (siteReady=true). Только когда оба выполнены, начинается fade-out, и onFinished вызывается уже после полного исчезновения. Тогда вы безопасно размонтируете preloader через setHidden(true).
+Шаг 4 — Дополнительные ресурсы (на случай долгой загрузки данных)
+Событие window.load срабатывает когда загружены DOM, изображения и скрипты. Если вы дополнительно дожидаетесь данных (например, fetch к API), объедините оба условия:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+const [domReady, setDomReady] = useState(false);
+const [dataReady, setDataReady] = useState(false);
+const siteReady = domReady && dataReady;
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+useEffect(() => {
+  // 1) DOM + assets
+  if (document.readyState === 'complete') setDomReady(true);
+  else window.addEventListener('load', () => setDomReady(true), { once: true });
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+  // 2) ваши данные
+  fetch('/api/menu').then(() => setDataReady(true));
+}, []);
+Props
+Prop	Тип	По умолчанию	Описание
+siteReady	boolean	false	Когда true и анимация закончилась — preloader делает fade-out.
+onFinished	() ⇒ void	—	Вызывается после fade-out. Используйте для размонтирования.
+duration	number (ms)	2800	Длительность написания.
+minDisplay	number (ms)	duration + 400	Минимум сколько preloader виден (даже если сайт уже готов).
+fadeOut	number (ms)	600	Длительность исчезновения.
+background	'cream' | 'paper' | 'white' | 'ink'	'cream'	Цвет фона.
+tagline	string | null	'restaurant de la'	Подпись под логотипом. null — без подписи.
+strokeWidth	number	130	Толщина пера в единицах SVG (viewBox 3491×1187).
+logoSrc	string (url)	—	Если передан, используется вместо встроенного.
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Как использовать в React
+Скачайте strokes-array.js и положите рядом с компонентом
+В index.html подключите его перед React-бандлом, ИЛИ конвертируйте в ESM (export const STROKE_PATHS = [...])
+Передайте ваши настройки как props в <ProvansPreloader>:
+<ProvansPreloader
+  siteReady={siteReady}
+  onFinished={() => setHidden(true)}
+  duration={2800}
+  strokeWidth={130}
+  background="cream"
+  tagline="restaurant de la"
+/>ЛРЬ
