@@ -21,14 +21,10 @@ body {
   top: 0;
   z-index: 100;
   border-bottom: 1px solid rgba(158, 142, 125, 0.2);
-}
-
-.nav {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 40px;
-  width: 100%;
 }
 
 .nav-left {
@@ -100,6 +96,8 @@ body {
   border: none;
   cursor: pointer;
   color: #3E3A36;
+  position: relative;
+    z-index: 102;
 }
 
 /* Мобильное меню */
@@ -114,7 +112,7 @@ body {
   flex-direction: column;
   gap: 15px;
   border-bottom: 1px solid rgba(158, 142, 125, 0.2);
-  z-index: 99;
+  z-index: 102;
 }
 
 .mobile-menu-btn {
@@ -152,7 +150,6 @@ body {
   aspect-ratio: 3491 / 1187;
   margin: 0 auto 20px;
   position: relative;
-  /* выше шапки (z-index: 100), чтобы уменьшающееся лого ехало ПОВЕРХ хедера, не под ним */
   z-index: 101;
 }
 
@@ -815,19 +812,24 @@ body {
 @media (max-width: 768px) {
   .header {
     padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 12px;
   }
+
+    .nav-left {
+      visibility: hidden;
+    }
   
-  .nav {
+    .nav-right> :not(.burger) {
     display: none;
   }
-  
+
   .burger {
     display: block;
   }
-  
+
+    .logo-image {
+      width: 120px;
+    }
   .mobile-menu {
     display: flex;
   }

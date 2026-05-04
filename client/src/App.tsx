@@ -81,8 +81,10 @@ function App() {
       if (!heroW) return;
 
       const headerLogoRect = headerLogo.getBoundingClientRect();
+      const headerW = headerLogoImg.offsetWidth;
+      if (!headerW) return;
+
       const headerCenterVP = headerLogoRect.top + headerLogoRect.height / 2;
-      const headerW = headerLogoImg.offsetWidth || heroW;
       const scaleEnd = headerW / heroW;
 
       const titleCenterAbs = top + height / 2;
@@ -185,50 +187,46 @@ function App() {
     <div className="app">
       {/* Шапка */}
       <header className="header">
-        <nav className="nav">
-          <div className="nav-left">
-            <button className="nav-btn" onClick={() => navigate('/gallery')}>Галерея</button>
-            <button className="nav-btn" onClick={() => document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })}>Контакты</button>
-          </div>
-          <button
-            ref={headerLogoRef}
-            className="logo"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            style={{
-              // Невидимый клик-таргет: визуальное место занимает hero-title-image,
-              // которая въезжает сюда через transform при прокрутке.
-              opacity: 0,
-              cursor: 'pointer',
-            }}
-            aria-label="Наверх"
+        <div className="nav-left">
+          <button className="nav-btn" onClick={() => navigate('/gallery')}>Галерея</button>
+          <button className="nav-btn" onClick={() => document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })}>Контакты</button>
+        </div>
+        <button
+          ref={headerLogoRef}
+          className="logo"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          style={{
+            opacity: 0,
+            cursor: 'pointer',
+          }}
+          aria-label="Наверх"
+        >
+          <img
+            ref={headerLogoImgRef}
+            src={provansCroppedLogo}
+            alt="Прованс"
+            className="logo-image"
+          />
+        </button>
+        <div className="nav-right">
+          <a
+            href="https://just-eat.by/provence-gomel"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="delivery-link"
           >
-            <img
-              ref={headerLogoImgRef}
-              src={provansCroppedLogo}
-              alt="Прованс"
-              className="logo-image"
-            />
-          </button>
-          <div className="nav-right">
-            <a
-              href="https://just-eat.by/provence-gomel"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="delivery-link"
-            >
-              Доставка
-            </a>
-            {user ? (
-              <button className="nav-btn nav-account-btn" onClick={() => setIsAccountOpen(true)}>
-                <span className="nav-account-avatar">{user.name.charAt(0).toUpperCase()}</span>
-                {user.name}
-              </button>
-            ) : (
-              <button className="nav-btn" onClick={() => setIsAuthOpen(true)}>Войти</button>
-            )}
-          </div>
-        </nav>
-        <button className="burger" onClick={() => setIsMenuOpen(!isMenuOpen)}>☰</button>
+            Доставка
+          </a>
+          {user ? (
+            <button className="nav-btn nav-account-btn" onClick={() => setIsAccountOpen(true)}>
+              <span className="nav-account-avatar">{user.name.charAt(0).toUpperCase()}</span>
+              {user.name}
+            </button>
+          ) : (
+            <button className="nav-btn" onClick={() => setIsAuthOpen(true)}>Войти</button>
+          )}
+          <button className="burger" onClick={() => setIsMenuOpen(!isMenuOpen)}>☰</button>
+        </div>
       </header>
 
       {/* Мобильное меню */}
