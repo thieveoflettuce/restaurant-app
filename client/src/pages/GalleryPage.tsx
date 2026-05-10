@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
+import provansCroppedLogo from '../img/provans-cropped.png';
 
 const PHOTOS = [1, 2, 3, 4, 5, 6];
 const VIDEOS = [1, 2];
@@ -14,7 +15,9 @@ export default function GalleryPage() {
       <header className="header">
         <nav className="nav">
           <div className="nav-left" />
-          <button className="logo" onClick={() => navigate('/')}>Прованс</button>
+          <button className="logo" onClick={() => navigate('/')} aria-label="На главную">
+            <img src={provansCroppedLogo} alt="Прованс" className="logo-image" />
+          </button>
           <div className="nav-right" />
         </nav>
       </header>
