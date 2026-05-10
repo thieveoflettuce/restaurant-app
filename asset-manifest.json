@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/restaurant-app/static/css/main.0a7eec7d.css",
-    "main.js": "/restaurant-app/static/js/main.4879fb88.js",
+    "main.js": "/restaurant-app/static/js/main.cf26e015.js",
     "static/js/453.af205ec6.chunk.js": "/restaurant-app/static/js/453.af205ec6.chunk.js",
     "static/media/provans-cropped.png": "/restaurant-app/static/media/provans-cropped.068f2b867808c2c2d686.png",
     "static/media/white-logo-cropped.png": "/restaurant-app/static/media/white-logo-cropped.b1cc94a5110cf04d48c7.png",
     "index.html": "/restaurant-app/index.html",
     "main.0a7eec7d.css.map": "/restaurant-app/static/css/main.0a7eec7d.css.map",
-    "main.4879fb88.js.map": "/restaurant-app/static/js/main.4879fb88.js.map",
+    "main.cf26e015.js.map": "/restaurant-app/static/js/main.cf26e015.js.map",
     "453.af205ec6.chunk.js.map": "/restaurant-app/static/js/453.af205ec6.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.0a7eec7d.css",
-    "static/js/main.4879fb88.js"
+    "static/js/main.cf26e015.js"
   ]
 }
