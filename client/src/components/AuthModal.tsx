@@ -12,7 +12,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   const [loading, setLoading] = useState(false);
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [registerForm, setRegisterForm] = useState({ name: '', email: '', phone: '', password: '' });
+  const [registerForm, setRegisterForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +38,12 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setError('');
     setLoading(true);
     try {
-      await register(registerForm.name, registerForm.email, registerForm.phone, registerForm.password);
+      await register(
+        registerForm.name,
+        registerForm.email,
+        registerForm.phone,
+        registerForm.password
+      );
       onClose();
     } catch (err: any) {
       setError(err.response?.data?.error || 'Ошибка регистрации');
@@ -45,20 +55,24 @@ export default function AuthModal({ onClose }: AuthModalProps) {
   return (
     <div className="modal-overlay" onMouseDown={onClose}>
       <div className="modal-content" onMouseDown={(e) => e.stopPropagation()}>
-        <h3 className="modal-title">
-          {tab === 'login' ? 'Вход' : 'Регистрация'}
-        </h3>
+        <h3 className="modal-title">{tab === 'login' ? 'Вход' : 'Регистрация'}</h3>
 
         <div className="auth-tabs">
           <button
             className={`auth-tab ${tab === 'login' ? 'active' : ''}`}
-            onClick={() => { setTab('login'); setError(''); }}
+            onClick={() => {
+              setTab('login');
+              setError('');
+            }}
           >
             Войти
           </button>
           <button
             className={`auth-tab ${tab === 'register' ? 'active' : ''}`}
-            onClick={() => { setTab('register'); setError(''); }}
+            onClick={() => {
+              setTab('register');
+              setError('');
+            }}
           >
             Регистрация
           </button>
@@ -71,7 +85,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               placeholder="Email"
               className="modal-input"
               value={loginForm.email}
-              onChange={e => setLoginForm({ ...loginForm, email: e.target.value })}
+              onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
               required
             />
             <input
@@ -79,7 +93,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               placeholder="Пароль"
               className="modal-input"
               value={loginForm.password}
-              onChange={e => setLoginForm({ ...loginForm, password: e.target.value })}
+              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
               required
             />
             {error && <p className="auth-error">{error}</p>}
@@ -94,7 +108,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               placeholder="Ваше имя"
               className="modal-input"
               value={registerForm.name}
-              onChange={e => setRegisterForm({ ...registerForm, name: e.target.value })}
+              onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
               required
             />
             <input
@@ -102,7 +116,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               placeholder="Email"
               className="modal-input"
               value={registerForm.email}
-              onChange={e => setRegisterForm({ ...registerForm, email: e.target.value })}
+              onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
               required
             />
             <input
@@ -110,14 +124,14 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               placeholder="Телефон"
               className="modal-input"
               value={registerForm.phone}
-              onChange={e => setRegisterForm({ ...registerForm, phone: e.target.value })}
+              onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
             />
             <input
               type="password"
               placeholder="Пароль"
               className="modal-input"
               value={registerForm.password}
-              onChange={e => setRegisterForm({ ...registerForm, password: e.target.value })}
+              onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
               required
             />
             {error && <p className="auth-error">{error}</p>}
@@ -127,7 +141,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
           </form>
         )}
 
-        <button className="modal-close" onClick={onClose}>×</button>
+        <button className="modal-close" onClick={onClose}>
+          x
+        </button>
       </div>
     </div>
   );
