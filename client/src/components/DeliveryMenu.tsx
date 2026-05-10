@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { useAuth } from '../context/AuthContext';
 
 interface CartItem {
@@ -39,7 +39,7 @@ export default function DeliveryMenu({ onClose }: DeliveryMenuProps) {
   const [orderPlaced, setOrderPlaced] = useState(false);
 
   useEffect(() => {
-    axios.get('/api/dishes').then((res) => {
+    api.get('/api/dishes').then((res) => {
       setDishes(res.data);
       const cats = Array.from(new Set(res.data.map((d: Dish) => d.category_name)));
       setCategories(cats as string[]);
@@ -90,7 +90,7 @@ export default function DeliveryMenu({ onClose }: DeliveryMenuProps) {
     };
 
     try {
-      await axios.post('/api/delivery-orders', orderData, {
+      await api.post('/api/delivery-orders', orderData, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       setOrderPlaced(true);
