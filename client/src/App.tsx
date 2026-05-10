@@ -8,6 +8,7 @@ import AccountModal from './components/AccountModal';
 import ReviewModal from './components/ReviewModal';
 import provansCroppedLogo from './img/provans-cropped.png';
 import whiteLogoCropped from './img/white-logo-cropped.png';
+import DeliveryMenu from './components/DeliveryMenu';
 
 function App() {
   const { user, token } = useAuth();
@@ -25,6 +26,13 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [showDelivery, setShowDelivery] = useState(false);
+
+  const openDelivery = () => {
+    setIsMenuOpen(false);
+    setShowDelivery(true);
+    window.scrollTo(0, 0);
+  };
 
   const heroTitleRef = useRef<HTMLHeadingElement>(null);
   const heroTitleImgRef = useRef<HTMLSpanElement>(null);
@@ -185,6 +193,22 @@ function App() {
 
   return (
     <div className="app">
+      {showDelivery && (
+        <div className="delivery-fullscreen">
+          <button
+            type="button"
+            className="delivery-fullscreen-close"
+            onClick={() => setShowDelivery(false)}
+            aria-label="Закрыть доставку"
+          >
+            ×
+          </button>
+          <DeliveryMenu onClose={() => setShowDelivery(false)} />
+        </div>
+      )}
+
+      {!showDelivery && (
+      <>
       {/* Шапка */}
       <header className="header">
         <div className="nav-left">
@@ -209,14 +233,9 @@ function App() {
           />
         </button>
         <div className="nav-right">
-          <a
-            href="https://just-eat.by/provence-gomel"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="delivery-link"
-          >
-            Доставка
-          </a>
+            <button type="button" className="delivery-link" onClick={openDelivery}>
+                Доставка
+            </button>
           {user ? (
             <button className="nav-btn nav-account-btn" onClick={() => setIsAccountOpen(true)}>
               <span className="nav-account-avatar">{user.name.charAt(0).toUpperCase()}</span>
@@ -236,14 +255,9 @@ function App() {
           <button className="mobile-menu-btn">О нас</button>
           <button className="mobile-menu-btn">Галерея</button>
           <button className="mobile-menu-btn">Контакты</button>
-          <a
-            href="https://just-eat.by/provence-gomel"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mobile-delivery"
-          >
+          <button type="button" className="mobile-delivery" onClick={openDelivery}>
             Доставка
-          </a>
+          </button>
           {user ? (
             <button className="mobile-menu-btn" onClick={() => { setIsAccountOpen(true); setIsMenuOpen(false); }}>
               Личный кабинет
@@ -351,14 +365,9 @@ function App() {
             </div>
             <div className="contact-item">
               <span className="contact-icon">🚚</span>
-              <a
-                href="https://just-eat.by/provence-gomel"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-link"
-              >
+              <button type="button" className="contact-link contact-link-button" onClick={openDelivery}>
                 Заказать доставку
-              </a>
+              </button>
             </div>
           </div>
           <div className="contacts-map">
@@ -393,20 +402,11 @@ function App() {
                 <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
               </svg>
             </a>
-            <a
-              href="https://just-eat.by/provence-gomel"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="social-btn"
-              aria-label="Доставка"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zm-.5 1.5 1.96 2.5H17V9.5h2.5zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-1.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5.67-1.5 1.5-1.5 1.5.67 1.5 1.5z"/>
-              </svg>
-            </a>
           </div>
         </div>
       </footer>
+      </>
+      )}
 
       {/* Модалка бронирования */}
       {isBookingOpen && (
