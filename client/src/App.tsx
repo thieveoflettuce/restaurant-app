@@ -10,6 +10,9 @@ import provansCroppedLogo from './img/provans-cropped.png';
 import whiteLogoCropped from './img/white-logo-cropped.png';
 import DeliveryMenu from './components/DeliveryMenu';
 
+/** Фото главного экрана: положите свой файл в `client/public/hero-home.jpg` (замените существующий). */
+const HERO_BACKGROUND_URL = `${process.env.PUBLIC_URL}/hero-home.jpg`;
+
 function App() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
@@ -272,6 +275,12 @@ function App() {
 
       {/* Главный экран */}
       <section className="hero">
+        <div
+          className="hero-background"
+          style={{ backgroundImage: `url(${HERO_BACKGROUND_URL})` }}
+          aria-hidden={true}
+        />
+        <div className="hero-scrim" aria-hidden={true} />
         <div className="hero-overlay">
           <h1 className="hero-title" ref={heroTitleRef}>
             <span

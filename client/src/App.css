@@ -130,16 +130,36 @@ body {
 /* Герой */
 .hero {
   height: 90vh;
-  background: linear-gradient(135deg, #9BAB8F 0%, #C17B5E 100%);
+  background-color: #3E3A36;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: white;
   position: relative;
+  overflow: hidden;
+}
+
+.hero-background {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(135deg, rgba(155, 171, 143, 0.82) 0%, rgba(193, 123, 94, 0.78) 100%);
+  pointer-events: none;
 }
 
 .hero-overlay {
+  position: relative;
+  z-index: 2;
   max-width: 800px;
   padding: 0 20px;
 }
