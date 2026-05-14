@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/restaurant-app/static/css/main.65aa22f3.css",
-    "main.js": "/restaurant-app/static/js/main.02ab1e71.js",
+    "main.css": "/restaurant-app/static/css/main.0ab9a5b1.css",
+    "main.js": "/restaurant-app/static/js/main.8b7c8e79.js",
     "static/js/453.af205ec6.chunk.js": "/restaurant-app/static/js/453.af205ec6.chunk.js",
     "static/media/provans-cropped.png": "/restaurant-app/static/media/provans-cropped.068f2b867808c2c2d686.png",
     "static/media/white-logo-cropped.png": "/restaurant-app/static/media/white-logo-cropped.b1cc94a5110cf04d48c7.png",
     "index.html": "/restaurant-app/index.html",
-    "main.65aa22f3.css.map": "/restaurant-app/static/css/main.65aa22f3.css.map",
-    "main.02ab1e71.js.map": "/restaurant-app/static/js/main.02ab1e71.js.map",
+    "main.0ab9a5b1.css.map": "/restaurant-app/static/css/main.0ab9a5b1.css.map",
+    "main.8b7c8e79.js.map": "/restaurant-app/static/js/main.8b7c8e79.js.map",
     "453.af205ec6.chunk.js.map": "/restaurant-app/static/js/453.af205ec6.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.65aa22f3.css",
-    "static/js/main.02ab1e71.js"
+    "static/css/main.0ab9a5b1.css",
+    "static/js/main.8b7c8e79.js"
   ]
 }
