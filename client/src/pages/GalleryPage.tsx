@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../App.css';
 import provansCroppedLogo from '../img/provans-cropped.png';
 
-const PHOTOS = [1, 2, 3, 4, 5, 6];
+const PHOTOS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const VIDEOS = [1, 2];
 
 export default function GalleryPage() {
