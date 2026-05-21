@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import GalleryPage from './pages/GalleryPage';
+import DeliveryPage from './pages/DeliveryPage';
 import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -22,7 +23,11 @@ function RootShell() {
     }
     const onLoad = () => setSiteReady(true);
     window.addEventListener('load', onLoad);
-    return () => window.removeEventListener('load', onLoad);
+    const fallback = setTimeout(() => setSiteReady(true), 8000);
+    return () => {
+      window.removeEventListener('load', onLoad);
+      clearTimeout(fallback);
+    };
   }, []);
 
   return (
@@ -42,11 +47,12 @@ function RootShell() {
           morphDuration={900}
         />
       )}
-      <BrowserRouter basename="/restaurant-app">
+      <BrowserRouter basename={process.env.PUBLIC_URL || ''}>
         <AuthProvider>
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/delivery" element={<DeliveryPage />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

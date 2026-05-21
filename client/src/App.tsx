@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import api from './api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
@@ -8,11 +8,24 @@ import AccountModal from './components/AccountModal';
 import ReviewModal from './components/ReviewModal';
 import provansCroppedLogo from './img/provans-cropped.png';
 import whiteLogoCropped from './img/white-logo-cropped.png';
-import DeliveryMenu from './components/DeliveryMenu';
+
 
 function App() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const state = location.state as { scrollTo?: string; openDelivery?: boolean } | null;
+    if (!state) return;
+    if (state.scrollTo === 'contacts') {
+      setTimeout(() => document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' }), 50);
+    }
+    if (state.openDelivery) {
+      navigate('/delivery');
+    }
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
   const [pendingReview, setPendingReview] = useState<any>(null);
 
   useEffect(() => {
@@ -21,18 +34,65 @@ function App() {
       .then(res => setPendingReview(res.data))
       .catch(() => {});
   }, [user, token]);
+  const [lunchTimer, setLunchTimer] = useState<string | null>(null);
+  const [breakfastTimer, setBreakfastTimer] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fmt = (sec: number) => {
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    };
+    const update = () => {
+      const now = new Date();
+      const minskNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 3 * 3600000);
+      const day = minskNow.getDay(); // 0=Вс, 1=Пн..5=Пт, 6=Сб
+      const total = minskNow.getHours() * 3600 + minskNow.getMinutes() * 60 + minskNow.getSeconds();
+      const start = 12 * 3600;
+      const end = 16 * 3600;
+      const DAY = 24 * 3600;
+
+      // Бизнес-ланч Пн–Пт
+      let lunch: string | null = null;
+      if (day >= 1 && day <= 5) {
+        if (total < start) {
+          lunch = `До начала: ${fmt(start - total)}`;
+        } else if (total < end) {
+          lunch = `До окончания: ${fmt(end - total)}`;
+        } else if (day <= 4) { // Пн–Чт после 16:00 — следующий ланч завтра, всегда < 24ч
+          lunch = `До следующего бизнес-ланча: ${fmt((DAY - total) + start)}`;
+        }
+        // Пт после 16:00 — следующий в Пн, > 24ч, не показываем
+      }
+      setLunchTimer(lunch);
+
+      // Завтраки Сб–Вс
+      let breakfast: string | null = null;
+      if (day === 6 || day === 0) {
+        if (total < start) {
+          breakfast = `До начала: ${fmt(start - total)}`;
+        } else if (total < end) {
+          breakfast = `До окончания: ${fmt(end - total)}`;
+        } else if (day === 6) { // Сб после 16:00 — воскресенье, всегда < 24ч
+          breakfast = `До следующего завтрака: ${fmt((DAY - total) + start)}`;
+        }
+        // Вс после 16:00 — следующий в Сб, > 24ч, не показываем
+      }
+      setBreakfastTimer(breakfast);
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const [isMusicOpen, setIsMusicOpen] = useState(false);
+  const [isOfferOpen, setIsOfferOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [showDelivery, setShowDelivery] = useState(false);
-
-  const openDelivery = () => {
-    setIsMenuOpen(false);
-    setShowDelivery(true);
-    window.scrollTo(0, 0);
-  };
 
   const heroTitleRef = useRef<HTMLHeadingElement>(null);
   const heroTitleImgRef = useRef<HTMLSpanElement>(null);
@@ -193,22 +253,6 @@ function App() {
 
   return (
     <div className="app">
-      {showDelivery && (
-        <div className="delivery-fullscreen">
-          <button
-            type="button"
-            className="delivery-fullscreen-close"
-            onClick={() => setShowDelivery(false)}
-            aria-label="Закрыть доставку"
-          >
-            ×
-          </button>
-          <DeliveryMenu onClose={() => setShowDelivery(false)} />
-        </div>
-      )}
-
-      {!showDelivery && (
-      <>
       {/* Шапка */}
       <header className="header">
         <div className="nav-left">
@@ -233,7 +277,7 @@ function App() {
           />
         </button>
         <div className="nav-right">
-            <button type="button" className="delivery-link" onClick={openDelivery}>
+            <button type="button" className="delivery-link" onClick={() => navigate('/delivery')}>
                 Доставка
             </button>
           {user ? (
@@ -255,7 +299,7 @@ function App() {
           <button className="mobile-menu-btn">О нас</button>
           <button className="mobile-menu-btn">Галерея</button>
           <button className="mobile-menu-btn">Контакты</button>
-          <button type="button" className="mobile-delivery" onClick={openDelivery}>
+          <button type="button" className="mobile-delivery" onClick={() => navigate('/delivery')}>
             Доставка
           </button>
           {user ? (
@@ -304,9 +348,25 @@ function App() {
             Французское очарование на берегу Сожа
             <span className="hero-breakfast">Завтраки СБ-ВС 12:00-16:00</span>
             <span className="hero-lunch">Бизнес-ланчи Пн-Пт 12:00-16:00</span>
+            {(lunchTimer || breakfastTimer) && (
+              <span className="hero-lunch-timer">{lunchTimer || breakfastTimer}</span>
+            )}
           </p>
           <button className="hero-btn" onClick={openBooking}>
             Забронировать столик
+          </button>
+        </div>
+      </section>
+
+      {/* Сегодня в ресторане */}
+      <section className="today">
+        <h2 className="section-title">Сегодня в ресторане</h2>
+        <div className="today-cards">
+          <button type="button" className="today-card today-card--music" onClick={() => setIsMusicOpen(true)}>
+            <span className="today-card-text">Живая музыка в&nbsp;четверг, пятницу и&nbsp;субботу</span>
+          </button>
+          <button type="button" className="today-card today-card--offer" onClick={() => setIsOfferOpen(true)}>
+            <span className="today-card-text">Новое спец. предложение</span>
           </button>
         </div>
       </section>
@@ -365,7 +425,7 @@ function App() {
             </div>
             <div className="contact-item">
               <span className="contact-icon">🚚</span>
-              <button type="button" className="contact-link contact-link-button" onClick={openDelivery}>
+              <button type="button" className="contact-link contact-link-button" onClick={() => navigate('/delivery')}>
                 Заказать доставку
               </button>
             </div>
@@ -387,7 +447,7 @@ function App() {
       {/* Подвал */}
       <footer className="footer">
         <div className="footer-content">
-          <p className="footer-copy">© 2024 Прованс. Все права защищены</p>
+          <p className="footer-copy">© 2026 Прованс. Все права защищены</p>
           <div className="footer-social">
             <a
               href="https://www.instagram.com/provansgomel/?hl=ru"
@@ -405,8 +465,6 @@ function App() {
           </div>
         </div>
       </footer>
-      </>
-      )}
 
       {/* Модалка бронирования */}
       {isBookingOpen && (
@@ -481,11 +539,45 @@ function App() {
         <div className="modal-overlay" onMouseDown={() => setSelectedImage(null)}>
           <div className="modal-content image-modal" onMouseDown={(e) => e.stopPropagation()}>
             <img
-              src={`/interior${selectedImage}.jpg`}
+              src={`${process.env.PUBLIC_URL}/interior${selectedImage}.jpg`}
               alt={`Прованс фото ${selectedImage}`}
               className="modal-image"
             />
             <button className="modal-close" onClick={() => setSelectedImage(null)}>×</button>
+          </div>
+        </div>
+      )}
+
+      {/* Модалка живой музыки */}
+      {isMusicOpen && (
+        <div className="modal-overlay" onMouseDown={() => setIsMusicOpen(false)}>
+          <div className="modal-content today-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <h3 className="today-modal-title">Живая музыка</h3>
+            <p className="today-modal-body">
+              Вечера с живым звуком в атмосфере Прованса — идеальный повод собраться с близкими за столом у Сожа.
+            </p>
+            <p className="today-modal-body">
+              Уточняйте расписание выступлений и бронируйте столик заранее — в выходные места разбирают быстро.
+            </p>
+            <button className="hero-btn today-modal-btn" onClick={() => { setIsMusicOpen(false); openBooking(); }}>Забронировать столик</button>
+            <button className="modal-close" onClick={() => setIsMusicOpen(false)}>×</button>
+          </div>
+        </div>
+      )}
+
+      {/* Модалка спец. предложения */}
+      {isOfferOpen && (
+        <div className="modal-overlay" onMouseDown={() => setIsOfferOpen(false)}>
+          <div className="modal-content today-modal" onMouseDown={(e) => e.stopPropagation()}>
+            <h3 className="today-modal-title">Спец. предложение</h3>
+            <p className="today-modal-body">
+              Мы регулярно обновляем акции и сезонные блюда — следите за новостями в соцсетях и уточняйте детали у команды зала.
+            </p>
+            <p className="today-modal-body">
+              Забронируйте столик и спросите официанта о действующих предложениях в день визита.
+            </p>
+            <button className="hero-btn today-modal-btn" onClick={() => { setIsOfferOpen(false); openBooking(); }}>Забронировать столик</button>
+            <button className="modal-close" onClick={() => setIsOfferOpen(false)}>×</button>
           </div>
         </div>
       )}

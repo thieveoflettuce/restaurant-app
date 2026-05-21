@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
 import provansCroppedLogo from '../img/provans-cropped.png';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from '../components/AuthModal';
 import AccountModal from '../components/AccountModal';
+import DeliveryMenu from '../components/DeliveryMenu';
 
-const PHOTOS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const VIDEOS = [1, 2];
-
-export default function GalleryPage() {
+export default function DeliveryPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -21,14 +18,14 @@ export default function GalleryPage() {
     <div className="app">
       <header className="header">
         <div className="nav-left">
-          <button className="nav-btn nav-btn--disabled" disabled>Галерея</button>
+          <button className="nav-btn" onClick={() => navigate('/gallery')}>Галерея</button>
           <button className="nav-btn" onClick={() => navigate('/', { state: { scrollTo: 'contacts' } })}>Контакты</button>
         </div>
         <button className="logo" onClick={() => navigate('/')} aria-label="На главную">
           <img src={provansCroppedLogo} alt="Прованс" className="logo-image" />
         </button>
         <div className="nav-right">
-          <button className="nav-btn" onClick={() => navigate('/delivery')}>Доставка</button>
+          <button className="nav-btn nav-btn--disabled" disabled>Доставка</button>
           {user ? (
             <button className="nav-btn nav-account-btn" onClick={() => setIsAccountOpen(true)}>
               <span className="nav-account-avatar">{user.name.charAt(0).toUpperCase()}</span>
@@ -43,9 +40,9 @@ export default function GalleryPage() {
 
       {isMenuOpen && (
         <div className="mobile-menu">
-          <button className="mobile-menu-btn" style={{ opacity: 0.4 }} disabled>Галерея</button>
+          <button className="mobile-menu-btn" onClick={() => navigate('/gallery')}>Галерея</button>
           <button className="mobile-menu-btn" onClick={() => navigate('/', { state: { scrollTo: 'contacts' } })}>Контакты</button>
-          <button className="mobile-menu-btn" onClick={() => navigate('/delivery')}>Доставка</button>
+          <button className="mobile-menu-btn" style={{ opacity: 0.4 }} disabled>Доставка</button>
           {user ? (
             <button className="mobile-menu-btn" onClick={() => { setIsAccountOpen(true); setIsMenuOpen(false); }}>
               Личный кабинет
@@ -58,41 +55,7 @@ export default function GalleryPage() {
         </div>
       )}
 
-      <section className="gallery gallery-page">
-        <h2 className="section-title">Галерея</h2>
-
-        <div className="gallery-grid">
-          {PHOTOS.map(i => (
-            <div key={`photo-${i}`} className="gallery-item" onClick={() => setSelectedImage(i)}>
-              <img src={`${process.env.PUBLIC_URL}/interior${i}.jpg`} alt={`Интерьер ${i}`} className="gallery-img" />
-            </div>
-          ))}
-          {VIDEOS.map(i => (
-            <div key={`video-${i}`} className="gallery-item gallery-item--video">
-              <video
-                src={`${process.env.PUBLIC_URL}/gallery${i}.mp4`}
-                className="gallery-img"
-                controls
-                muted
-                playsInline
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {selectedImage && (
-        <div className="modal-overlay" onMouseDown={() => setSelectedImage(null)}>
-          <div className="modal-content image-modal" onMouseDown={e => e.stopPropagation()}>
-            <img
-              src={`${process.env.PUBLIC_URL}/interior${selectedImage}.jpg`}
-              alt={`Прованс фото ${selectedImage}`}
-              className="modal-image"
-            />
-            <button className="modal-close" onClick={() => setSelectedImage(null)}>×</button>
-          </div>
-        </div>
-      )}
+      <DeliveryMenu onLoginRequired={() => setIsAuthOpen(true)} />
 
       {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
       {isAccountOpen && <AccountModal onClose={() => setIsAccountOpen(false)} />}

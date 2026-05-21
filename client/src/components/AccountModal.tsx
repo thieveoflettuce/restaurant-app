@@ -12,6 +12,25 @@ interface Booking {
   status: string;
 }
 
+interface OrderItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+interface DeliveryOrder {
+  id: number;
+  order_number: string;
+  items: OrderItem[];
+  total_amount: number;
+  delivery_type: string;
+  delivery_address: string | null;
+  payment_method: string;
+  status: string;
+  created_at: string;
+}
+
 interface AccountModalProps {
   onClose: () => void;
 }
@@ -22,15 +41,36 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Отменено',
 };
 
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  new: 'Новый',
+  confirmed: 'Подтверждён',
+  preparing: 'Готовится',
+  delivering: 'В доставке',
+  ready: 'Готов к выдаче',
+  completed: 'Выполнен',
+  cancelled: 'Отменён',
+};
+
+const DELIVERY_TYPE_LABELS: Record<string, string> = {
+  delivery: 'Доставка',
+  pickup: 'Самовывоз',
+};
+
 export default function AccountModal({ onClose }: AccountModalProps) {
   const { user, token, logout } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [orders, setOrders] = useState<DeliveryOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/api/bookings/my', { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => setBookings(res.data))
-      .finally(() => setLoading(false));
+    const headers = { Authorization: `Bearer ${token}` };
+    Promise.all([
+      api.get('/api/bookings/my', { headers }),
+      api.get('/api/delivery-orders', { headers }),
+    ]).then(([bookingsRes, ordersRes]) => {
+      setBookings(bookingsRes.data);
+      setOrders(ordersRes.data);
+    }).finally(() => setLoading(false));
   }, [token]);
 
   const handleLogout = () => {
@@ -77,6 +117,44 @@ export default function AccountModal({ onClose }: AccountModalProps) {
                   </div>
                   <div className="booking-item-details">
                     {b.guests} {b.guests === 1 ? 'гость' : b.guests < 5 ? 'гостя' : 'гостей'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="account-section">
+          <h4 className="account-section-title">История заказов доставки</h4>
+          {loading ? (
+            <p className="account-empty">Загрузка...</p>
+          ) : orders.length === 0 ? (
+            <p className="account-empty">Заказов пока нет</p>
+          ) : (
+            <div className="bookings-list">
+              {orders.map(o => (
+                <div key={o.id} className="booking-item">
+                  <div className="booking-item-main">
+                    <span className="booking-date">
+                      №{o.order_number} · {new Date(o.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
+                    </span>
+                    <span className={`booking-status status-${o.status}`}>
+                      {ORDER_STATUS_LABELS[o.status] || o.status}
+                    </span>
+                  </div>
+                  <div className="booking-item-details">
+                    {DELIVERY_TYPE_LABELS[o.delivery_type] || o.delivery_type}
+                    {o.delivery_address && ` · ${o.delivery_address}`}
+                  </div>
+                  <div className="order-items-list">
+                    {o.items.map((item, i) => (
+                      <span key={i} className="order-item-chip">
+                        {item.name} × {item.quantity}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="order-total">
+                    Итого: {Number(o.total_amount).toFixed(2)} Br
                   </div>
                 </div>
               ))}
