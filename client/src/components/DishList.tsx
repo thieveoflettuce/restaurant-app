@@ -4,7 +4,7 @@ import api from '../api';
 interface Dish {
     id: number;
     name: string;
-    price: number | string;
+    price: string;
 }
 
 const DishList: React.FC = () => {
@@ -22,10 +22,7 @@ const DishList: React.FC = () => {
             <ul>
                 {dishes.map(dish => (
                     <li key={dish.id}>
-                        {dish.name} -{' '}
-                        {new Intl.NumberFormat('ru-BY', { style: 'currency', currency: 'BYN' }).format(
-                            Number(dish.price)
-                        )}
+                        {dish.name} - {dish.price} ₽
                     </li>
                 ))}
             </ul>

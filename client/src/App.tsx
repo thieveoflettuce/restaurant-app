@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useLayoutEffect, memo } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import api from './api';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './context/AuthContext';
 import AuthModal from './components/AuthModal';
@@ -9,51 +9,14 @@ import ReviewModal from './components/ReviewModal';
 import provansCroppedLogo from './img/provans-cropped.png';
 import whiteLogoCropped from './img/white-logo-cropped.png';
 import DeliveryMenu from './components/DeliveryMenu';
-import { useBusinessLunchCountdown } from './utils/businessLunchCountdown';
 
-/** Изолированные перерисовки от таймера бизнес-ланча (не весь `App`). */
-const BusinessLunchLine = memo(function BusinessLunchLine() {
-  const line = useBusinessLunchCountdown();
-  return <>{line}</>;
-});
-
-const GALLERY_INTERIOR_IDS = [1, 3, 4, 5, 6, 7] as const;
+/** Фото главного экрана: положите свой файл в `client/public/hero-home.jpg` (замените существующий). */
+const HERO_BACKGROUND_URL = `${process.env.PUBLIC_URL}/hero-home.jpg`;
 
 function App() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const [pendingReview, setPendingReview] = useState<any>(null);
-  const [heroBgUrl, setHeroBgUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const base = process.env.PUBLIC_URL || '';
-    const path = (name: string) => `${base}/${name}`.replace(/\/+/g, '/');
-    const candidates = [
-      'hero-home.jpg',
-      'hero-home.jpeg',
-      'hero-home.png',
-      'hero-home.webp',
-      'hero-home.JPG',
-      'hero-home.PNG',
-      'hero-home.JPEG',
-    ];
-    const fallbacks = ['hero.jpg'];
-    const urls = [...candidates, ...fallbacks].map(path);
-    let cancelled = false;
-    const tryNext = (index: number) => {
-      if (cancelled || index >= urls.length) return;
-      const img = new Image();
-      img.onload = () => {
-        if (!cancelled) setHeroBgUrl(urls[index]);
-      };
-      img.onerror = () => tryNext(index + 1);
-      img.src = urls[index];
-    };
-    tryNext(0);
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     if (!user || !token) return;
@@ -113,7 +76,7 @@ function App() {
     }
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [heroBgUrl]);
+  }, []);
 
   // Скролл-морфинг: три фазы, без translateY-погони за scrollY.
   //   A) static  — лого в hero, никаких трансформов.
@@ -153,7 +116,6 @@ function App() {
         wrapper.style.position = 'fixed';
         wrapper.style.top = `${headerCenterVP}px`;
         wrapper.style.left = '50%';
-        wrapper.style.zIndex = '110';
         wrapper.style.transform = `translate(-50%, -50%) scale(${scaleEnd})`;
         if (w) w.style.opacity = '0';
         if (g) g.style.opacity = '1';
@@ -165,7 +127,6 @@ function App() {
         wrapper.style.position = '';
         wrapper.style.top = '';
         wrapper.style.left = '';
-        wrapper.style.zIndex = '';
         const progress = (sy - morphStart) / morphRange;
         const scale = 1 - (1 - scaleEnd) * progress;
         wrapper.style.transform = `scale(${scale})`;
@@ -178,7 +139,6 @@ function App() {
         wrapper.style.position = '';
         wrapper.style.top = '';
         wrapper.style.left = '';
-        wrapper.style.zIndex = '';
         wrapper.style.transform = '';
         if (w) w.style.opacity = '1';
         if (g) g.style.opacity = '0';
@@ -197,7 +157,7 @@ function App() {
       window.removeEventListener('scroll', compute);
       window.removeEventListener('resize', compute);
     };
-  }, [heroBgUrl]);
+  }, []);
 
   const [bookingForm, setBookingForm] = useState({
     date: '', time: '', guests: '', name: user?.name || '', phone: user?.phone || ''
@@ -246,16 +206,7 @@ function App() {
           >
             ×
           </button>
-          <DeliveryMenu
-            onClose={() => setShowDelivery(false)}
-            onRequestContacts={() => {
-              setShowDelivery(false);
-              requestAnimationFrame(() => {
-                const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                document.getElementById('contacts')?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
-              });
-            }}
-          />
+          <DeliveryMenu onClose={() => setShowDelivery(false)} />
         </div>
       )}
 
@@ -324,13 +275,12 @@ function App() {
 
       {/* Главный экран */}
       <section className="hero">
-        {heroBgUrl && (
-          <div
-            className="hero-background"
-            style={{ backgroundImage: `url(${heroBgUrl})` }}
-            aria-hidden={true}
-          />
-        )}
+        <div
+          className="hero-background"
+          style={{ backgroundImage: `url(${HERO_BACKGROUND_URL})` }}
+          aria-hidden={true}
+        />
+        <div className="hero-scrim" aria-hidden={true} />
         <div className="hero-overlay">
           <h1 className="hero-title" ref={heroTitleRef}>
             <span
@@ -346,83 +296,27 @@ function App() {
                 }
               }}
             >
-              <span className="hero-title-image-filter">
-                <img
-                  src={whiteLogoCropped}
-                  alt="Прованс"
-                  className="hero-title-layer"
-                />
-                <img
-                  src={provansCroppedLogo}
-                  alt=""
-                  aria-hidden="true"
-                  className="hero-title-layer"
-                />
-              </span>
+              <img
+                src={whiteLogoCropped}
+                alt="Прованс"
+                className="hero-title-layer"
+              />
+              <img
+                src={provansCroppedLogo}
+                alt=""
+                aria-hidden="true"
+                className="hero-title-layer"
+              />
             </span>
           </h1>
           <p className="hero-subtitle">
             Французское очарование на берегу Сожа
             <span className="hero-breakfast">Завтраки СБ-ВС 12:00-16:00</span>
-            <span className="hero-lunch">
-              <BusinessLunchLine />
-            </span>
+            <span className="hero-lunch">Бизнес-ланчи Пн-Пт 12:00-16:00</span>
           </p>
-          <button id="booking-cta" className="hero-btn" type="button" onClick={openBooking}>
+          <button className="hero-btn" onClick={openBooking}>
             Забронировать столик
           </button>
-        </div>
-      </section>
-
-      <section className="today-at-restaurant" aria-labelledby="today-at-restaurant-heading">
-        <div className="today-at-restaurant__inner">
-          <h2 id="today-at-restaurant-heading" className="section-title">
-            Сегодня в ресторане
-          </h2>
-          <div className="today-at-restaurant__list">
-            <article
-              className="today-at-restaurant__card"
-              aria-labelledby="today-event-live-music"
-            >
-              <div
-                className="today-at-restaurant__bg"
-                style={{
-                  backgroundImage: `url(${process.env.PUBLIC_URL}/interior1.jpg)`,
-                }}
-                aria-hidden
-              />
-              <div className="today-at-restaurant__scrim" aria-hidden />
-              <Link
-                id="today-event-live-music"
-                className="today-at-restaurant__title"
-                to="/events/music"
-                aria-label="Подробнее: живая музыка по четвергам, пятницам и субботам"
-              >
-                Живая музыка каждый четверг, пятницу и субботу
-              </Link>
-            </article>
-            <article
-              className="today-at-restaurant__card"
-              aria-labelledby="today-event-special"
-            >
-              <div
-                className="today-at-restaurant__bg"
-                style={{
-                  backgroundImage: `url(${process.env.PUBLIC_URL}/interior2.jpg)`,
-                }}
-                aria-hidden
-              />
-              <div className="today-at-restaurant__scrim" aria-hidden />
-              <Link
-                id="today-event-special"
-                className="today-at-restaurant__title"
-                to="/events/special"
-                aria-label="Подробнее: новое спецпредложение"
-              >
-                Новое спецпредложение
-              </Link>
-            </article>
-          </div>
         </div>
       </section>
 
@@ -430,19 +324,13 @@ function App() {
       <section className="gallery">
         <h2 className="section-title">Атмосфера</h2>
         <div className="gallery-grid">
-          {GALLERY_INTERIOR_IDS.map((i) => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
               key={i}
               className="gallery-item"
               onClick={() => setSelectedImage(i)}
             >
-              <img
-                src={`${process.env.PUBLIC_URL}/interior${i}.jpg`}
-                alt={`Интерьер ${i}`}
-                className="gallery-img"
-                loading="lazy"
-                decoding="async"
-              />
+              <img src={`${process.env.PUBLIC_URL}/interior${i}.jpg`} alt={`Интерьер ${i}`} className="gallery-img" />
             </div>
           ))}
         </div>
@@ -471,9 +359,7 @@ function App() {
             </div>
             <div className="contact-item lunch-note">
               <span className="contact-icon">🍽️</span>
-              <span>
-                <BusinessLunchLine />
-              </span>
+              <span>Бизнес-ланчи: Пн-Пт 12:00-16:00</span>
             </div>
             <div className="contact-item">
               <span className="contact-icon">📷</span>
@@ -510,7 +396,7 @@ function App() {
       {/* Подвал */}
       <footer className="footer">
         <div className="footer-content">
-          <p className="footer-copy">© 2026 Прованс. Все права защищены</p>
+          <p className="footer-copy">© 2024 Прованс. Все права защищены</p>
           <div className="footer-social">
             <a
               href="https://www.instagram.com/provansgomel/?hl=ru"
@@ -604,7 +490,7 @@ function App() {
         <div className="modal-overlay" onMouseDown={() => setSelectedImage(null)}>
           <div className="modal-content image-modal" onMouseDown={(e) => e.stopPropagation()}>
             <img
-              src={`${process.env.PUBLIC_URL || ''}/interior${selectedImage}.jpg`.replace(/\/+/g, '/')}
+              src={`/interior${selectedImage}.jpg`}
               alt={`Прованс фото ${selectedImage}`}
               className="modal-image"
             />

@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import GalleryPage from './pages/GalleryPage';
-import EventPromoPage from './pages/EventPromoPage';
 import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -43,14 +42,11 @@ function RootShell() {
           morphDuration={900}
         />
       )}
-      <BrowserRouter
-        basename={(process.env.PUBLIC_URL || '').replace(/\/+$/, '') || '/'}
-      >
+      <BrowserRouter basename="/restaurant-app">
         <AuthProvider>
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/events/:slug" element={<EventPromoPage />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
