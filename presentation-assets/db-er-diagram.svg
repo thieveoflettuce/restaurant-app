@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="720" viewBox="0 0 1080 720">
+  <defs>
+    <style>
+      .title { font: 700 23px 'Segoe UI', Arial, sans-serif; fill: #1a237e; }
+      .subtitle { font: 400 14px 'Segoe UI', Arial, sans-serif; fill: #607d8b; }
+      .entity-title { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #fff; }
+      .entity-sub { font: 400 10px 'Segoe UI', Arial, sans-serif; fill: #90a4ae; }
+      .field { font: 400 12px 'Segoe UI', Arial, sans-serif; fill: #37474f; }
+      .field-key { font: 600 12px 'Segoe UI', Arial, sans-serif; fill: #1565c0; }
+      .field-link { font: 600 12px 'Segoe UI', Arial, sans-serif; fill: #c62828; }
+      .card { fill: #fff; stroke: #cfd8dc; stroke-width: 1.5; filter: url(#shadow); }
+      .hdr { fill: #37474f; }
+      .link-line {
+        fill: none; stroke: #5c6bc0; stroke-width: 2.2;
+        stroke-linecap: round; stroke-linejoin: round;
+      }
+      .crow {
+        fill: none; stroke: #5c6bc0; stroke-width: 2.2;
+        stroke-linecap: round;
+      }
+      .dot-one { fill: #5c6bc0; }
+    </style>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#263238" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="1080" height="720" fill="#f4f6fb"/>
+  <text x="540" y="42" text-anchor="middle" class="title">Структура базы данных — ресторан «Прованс»</text>
+  <text x="540" y="66" text-anchor="middle" class="subtitle">PostgreSQL, 6 таблиц</text>
+
+  
+  <g class="links">
+    
+    <path class="link-line" d="M 314 172 C 354 172, 328 162, 368 162"/>
+    <path class="crow" d="M 380 162 L 392 154 M 380 162 L 392 162 M 380 162 L 392 170"/>
+    <circle class="dot-one" cx="310" cy="172" r="3.5"/>
+    
+    <path class="link-line" d="M 644 172 C 684 172, 648 172, 688 172"/>
+    <path class="crow" d="M 700 172 L 712 164 M 700 172 L 712 172 M 700 172 L 712 180"/>
+    <circle class="dot-one" cx="640" cy="172" r="3.5"/>
+    
+    <path class="link-line" d="M 190 242 L 190 276 L 820 276 L 820 264"/>
+    <path class="crow" d="M 820 258 L 812 270 M 820 258 L 820 270 M 820 258 L 828 270"/>
+    <circle class="dot-one" cx="190" cy="242" r="3.5"/>
+    
+    <path class="link-line" d="M 314 212 L 358 212 L 358 442 L 688 442"/>
+    <path class="crow" d="M 700 442 L 712 434 M 700 442 L 712 442 M 700 442 L 712 450"/>
+    <circle class="dot-one" cx="314" cy="212" r="3.5"/>
+    
+    <path class="link-line" d="M 324 472 C 364 472, 328 457, 368 457"/>
+    <path class="crow" d="M 380 457 L 392 449 M 380 457 L 392 457 M 380 457 L 392 465"/>
+    <circle class="dot-one" cx="320" cy="472" r="3.5"/>
+  </g>
+  
+  <g class="entity">
+    <rect class="card" x="70" y="100" width="240" height="136" rx="10"/>
+    <rect class="hdr" x="70" y="100" width="240" height="34" rx="10"/>
+    <rect class="hdr" x="70" y="118" width="240" height="16"/>
+    <text x="190" y="123" text-anchor="middle" class="entity-title">users</text>
+    <text x="190" y="133" text-anchor="middle" class="entity-sub">пользователи</text>
+    <text x="84" y="150" class="field-key">id</text>
+<text x="84" y="172" class="field">name, email, phone</text>
+<text x="84" y="194" class="field">password_hash</text>
+<text x="84" y="216" class="field">created_at</text>
+  </g>
+  
+  <g class="entity">
+    <rect class="card" x="380" y="90" width="260" height="180" rx="10"/>
+    <rect class="hdr" x="380" y="90" width="260" height="34" rx="10"/>
+    <rect class="hdr" x="380" y="108" width="260" height="16"/>
+    <text x="510" y="113" text-anchor="middle" class="entity-title">bookings</text>
+    <text x="510" y="123" text-anchor="middle" class="entity-sub">бронирование</text>
+    <text x="394" y="140" class="field-key">id</text>
+<text x="394" y="162" class="field-link">user_id</text>
+<text x="394" y="184" class="field">date, time, guests</text>
+<text x="394" y="206" class="field">name, phone</text>
+<text x="394" y="228" class="field">status, reviewed</text>
+<text x="394" y="250" class="field">created_at</text>
+  </g>
+  
+  <g class="entity">
+    <rect class="card" x="700" y="100" width="240" height="158" rx="10"/>
+    <rect class="hdr" x="700" y="100" width="240" height="34" rx="10"/>
+    <rect class="hdr" x="700" y="118" width="240" height="16"/>
+    <text x="820" y="123" text-anchor="middle" class="entity-title">reviews</text>
+    <text x="820" y="133" text-anchor="middle" class="entity-sub">отзывы</text>
+    <text x="714" y="150" class="field-key">id</text>
+<text x="714" y="172" class="field-link">booking_id</text>
+<text x="714" y="194" class="field-link">user_id</text>
+<text x="714" y="216" class="field">rating, text</text>
+<text x="714" y="238" class="field">created_at</text>
+  </g>
+  
+  <g class="entity">
+    <rect class="card" x="70" y="400" width="250" height="114" rx="10"/>
+    <rect class="hdr" x="70" y="400" width="250" height="34" rx="10"/>
+    <rect class="hdr" x="70" y="418" width="250" height="16"/>
+    <text x="195" y="423" text-anchor="middle" class="entity-title">dish_categories</text>
+    <text x="195" y="433" text-anchor="middle" class="entity-sub">категории</text>
+    <text x="84" y="450" class="field-key">id</text>
+<text x="84" y="472" class="field">name</text>
+<text x="84" y="494" class="field">sort_order</text>
+  </g>
+  
+  <g class="entity">
+    <rect class="card" x="380" y="385" width="260" height="158" rx="10"/>
+    <rect class="hdr" x="380" y="385" width="260" height="34" rx="10"/>
+    <rect class="hdr" x="380" y="403" width="260" height="16"/>
+    <text x="510" y="408" text-anchor="middle" class="entity-title">dishes</text>
+    <text x="510" y="418" text-anchor="middle" class="entity-sub">блюда</text>
+    <text x="394" y="435" class="field-key">id</text>
+<text x="394" y="457" class="field-link">category_id</text>
+<text x="394" y="479" class="field">name, description</text>
+<text x="394" y="501" class="field">price, image_url</text>
+<text x="394" y="523" class="field">is_available</text>
+  </g>
+  
+  <g class="entity">
+    <rect class="card" x="700" y="370" width="290" height="246" rx="10"/>
+    <rect class="hdr" x="700" y="370" width="290" height="34" rx="10"/>
+    <rect class="hdr" x="700" y="388" width="290" height="16"/>
+    <text x="845" y="393" text-anchor="middle" class="entity-title">delivery_orders</text>
+    <text x="845" y="403" text-anchor="middle" class="entity-sub">заказы доставки</text>
+    <text x="714" y="420" class="field-key">id</text>
+<text x="714" y="442" class="field-link">user_id</text>
+<text x="714" y="464" class="field">order_number</text>
+<text x="714" y="486" class="field">items (JSONB)</text>
+<text x="714" y="508" class="field">total_amount</text>
+<text x="714" y="530" class="field">delivery_type, address</text>
+<text x="714" y="552" class="field">customer_name, phone</text>
+<text x="714" y="574" class="field">payment_method, status</text>
+<text x="714" y="596" class="field">created_at</text>
+  </g>
+</svg>

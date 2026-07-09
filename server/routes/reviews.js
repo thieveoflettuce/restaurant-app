@@ -1,53 +1,57 @@
 const express = require('express');
 const pool = require('../db');
-const authMiddleware = require('../middleware/auth');
+const { sendReviewNotification } = require('../mail');
 
 const router = express.Router();
 
-// Получить первое прошедшее бронирование без отзыва
-router.get('/pending', authMiddleware, async (req, res) => {
-    try {
-        const result = await pool.query(
-            `SELECT * FROM bookings
-             WHERE user_id = $1
-               AND reviewed = FALSE
-               AND (date < CURRENT_DATE OR (date = CURRENT_DATE AND time < CURRENT_TIME))
-             ORDER BY date ASC, time ASC
-             LIMIT 1`,
-            [req.userId]
-        );
-        res.json(result.rows[0] || null);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+router.post('/', async (req, res) => {
+  const { name, rating, text } = req.body;
 
-// Отправить отзыв
-router.post('/', authMiddleware, async (req, res) => {
-    const { booking_id, rating, text } = req.body;
-    if (!rating || rating < 1 || rating > 5)
-        return res.status(400).json({ error: 'Оценка обязательна' });
-    try {
-        await pool.query(
-            'INSERT INTO reviews (booking_id, user_id, rating, text) VALUES ($1, $2, $3, $4)',
-            [booking_id, req.userId, rating, text || null]
-        );
-        await pool.query('UPDATE bookings SET reviewed = TRUE WHERE id = $1', [booking_id]);
-        res.json({ ok: true });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
+  const ratingNum = Number(rating);
+  const reviewText = typeof text === 'string' ? text.trim() : '';
+  const guestName = typeof name === 'string' ? name.trim().slice(0, 100) : '';
 
-// Пропустить отзыв
-router.post('/skip/:bookingId', authMiddleware, async (req, res) => {
+  if (!Number.isInteger(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+    return res.status(400).json({ error: 'Выберите оценку от 1 до 5' });
+  }
+  if (reviewText.length < 10) {
+    return res.status(400).json({ error: 'Напишите отзыв хотя бы из 10 символов' });
+  }
+  if (reviewText.length > 2000) {
+    return res.status(400).json({ error: 'Отзыв слишком длинный (максимум 2000 символов)' });
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO guest_reviews (name, rating, text)
+       VALUES ($1, $2, $3)
+       RETURNING id, name, rating, text, created_at`,
+      [guestName || null, ratingNum, reviewText]
+    );
+
+    const review = result.rows[0];
+
     try {
-        await pool.query('UPDATE bookings SET reviewed = TRUE WHERE id = $1 AND user_id = $2',
-            [req.params.bookingId, req.userId]);
-        res.json({ ok: true });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+      await sendReviewNotification({
+        id: review.id,
+        name: review.name,
+        rating: review.rating,
+        text: review.text,
+        createdAt: review.created_at,
+      });
+    } catch (mailErr) {
+      console.error('[mail] Ошибка отправки отзыва на почту:', mailErr.message);
     }
+
+    res.status(201).json({ ok: true, id: review.id });
+  } catch (err) {
+    if (err.code === '42P01') {
+      return res.status(503).json({
+        error: 'Таблица отзывов не настроена. Выполните server/sql/guest_reviews.sql в базе данных.',
+      });
+    }
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

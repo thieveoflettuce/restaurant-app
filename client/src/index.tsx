@@ -3,11 +3,10 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import GalleryPage from './pages/GalleryPage';
-import DeliveryPage from './pages/DeliveryPage';
 import reportWebVitals from './reportWebVitals';
-import { AuthProvider } from './context/AuthContext';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ProvansPreloader from './components/ProvansPreloader';
+import ReviewWidget from './components/ReviewWidget';
 import { STROKE_PATHS } from './strokes-array';
 import logoSrc from './img/provans-cropped.png';
 import whiteLogoCropped from './img/white-logo-cropped.png';
@@ -48,13 +47,11 @@ function RootShell() {
         />
       )}
       <BrowserRouter basename={process.env.PUBLIC_URL || ''}>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<App />} />
-            <Route path="/gallery" element={<GalleryPage />} />
-            <Route path="/delivery" element={<DeliveryPage />} />
-          </Routes>
-        </AuthProvider>
+        <Routes>
+          <Route path="/" element={<App />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+        </Routes>
+        <ReviewWidget />
       </BrowserRouter>
     </>
   );

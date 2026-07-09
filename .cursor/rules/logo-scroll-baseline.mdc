@@ -1,0 +1,44 @@
+---
+description: Approved checkpoint for hero logo scroll morph (Jul 9 2026). User confirmed "то что нужно". Restore this if logo scroll experiments fail.
+globs: client/src/App.tsx,client/src/App.css
+alwaysApply: false
+---
+
+# Logo scroll baseline (approved checkpoint)
+
+User-approved working state (Jul 9 2026). If logo scroll changes go wrong, revert scroll/morph logic to this baseline.
+
+## Behavior
+
+- Hero `.hero-title-image` visible at top; on scroll morph starts after `morphStart`
+- **No `transform: scale()`** — logo shrinks via interpolated **width** (`heroW → headerW`) to preserve aspect ratio
+- Floating `.scroll-logo` via `createPortal(document.body)`:
+  - `position: fixed`, `left: 50%`, `transform: translate(-50%, -50%)`
+  - `z-index: 103` — above header border line
+  - Interpolated `top` from hero center to header center
+  - White → gold crossfade on scroll-logo layers (linear `progress`)
+- At `scrollY >= triggerEnd`: scroll-logo pinned in header slot, **clickable** (scroll to top)
+- Header `.logo` stays invisible (`opacity: 0`) — only used for measuring `headerW` / `headerCenterVP`
+- `morphRange = min(55vh, triggerEnd)`, linear progress
+
+## Key files
+
+- `client/src/App.tsx` — `measureHeroLogo`, `showScrollLogo` / `hideScrollLogo`, scroll `compute()`, portal `.scroll-logo`
+- `client/src/App.css` — `.scroll-logo`, `.scroll-logo--pinned`, `.scroll-logo-inner`, `.scroll-logo-layer`, `.hero-title-layer` with `object-fit: contain`
+
+## Measurement
+
+- `naturalRef`: real image rect from first `img` in hero (fallback: `.hero-title` box), stores `centerAbs`
+- Remeasure on load, resize, `provans-preloader-done`, timeout 3500ms
+- `ProvansPreloader.jsx` dispatches `provans-preloader-done` on finish
+
+## Do NOT reintroduce without user request
+
+- `transform: scale()` on hero logo during morph (causes squished/distorted text)
+- Moving morph on `.hero-title-image` with fixed + scale combo
+- Showing header `.logo` with `logo--visible` as the pinned end state (use scroll-logo instead)
+- Easing curves / handoff crossfade between hero and header elements
+
+## Revert phrase
+
+User can say: **«верни baseline логотипа»** — restore logic described above.

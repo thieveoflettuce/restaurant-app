@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
-const authMiddleware = require('./middleware/auth');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -9,7 +8,6 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/auth', require('./routes/auth'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/reviews', require('./routes/reviews'));
 
@@ -75,65 +73,6 @@ app.get('/api/dishes', async (req, res) => {
         throw e;
       }
     }
-    res.json(result.rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Создать заказ доставки
-app.post('/api/delivery-orders', authMiddleware, async (req, res) => {
-  const {
-    items,
-    delivery_type,
-    delivery_address,
-    customer_name,
-    customer_phone,
-    payment_method,
-    total_amount,
-  } = req.body;
-
-  const user_id = req.userId;
-  const order_number = `DEL-${Date.now()}`;
-
-  try {
-    const result = await pool.query(
-      `
-        INSERT INTO delivery_orders
-        (user_id, order_number, items, total_amount, delivery_type, delivery_address, customer_name, customer_phone, payment_method)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING *
-      `,
-      [
-        user_id,
-        order_number,
-        JSON.stringify(items),
-        total_amount,
-        delivery_type,
-        delivery_address,
-        customer_name,
-        customer_phone,
-        payment_method,
-      ]
-    );
-
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Получить заказы пользователя
-app.get('/api/delivery-orders', authMiddleware, async (req, res) => {
-  try {
-    const result = await pool.query(
-      `
-        SELECT * FROM delivery_orders
-        WHERE user_id = $1
-        ORDER BY created_at DESC
-      `,
-      [req.userId]
-    );
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

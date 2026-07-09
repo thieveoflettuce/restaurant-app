@@ -1,39 +1,26 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import api from './api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
-import { useAuth } from './context/AuthContext';
-import AuthModal from './components/AuthModal';
-import AccountModal from './components/AccountModal';
-import ReviewModal from './components/ReviewModal';
+import HeroBackground from './components/HeroBackground';
+import { HOME_GALLERY_PHOTOS, galleryPhotoUrl } from './galleryMedia';
 import provansCroppedLogo from './img/provans-cropped.png';
 import whiteLogoCropped from './img/white-logo-cropped.png';
 
-
 function App() {
-  const { user, token } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const state = location.state as { scrollTo?: string; openDelivery?: boolean } | null;
+    const state = location.state as { scrollTo?: string } | null;
     if (!state) return;
     if (state.scrollTo === 'contacts') {
       setTimeout(() => document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' }), 50);
     }
-    if (state.openDelivery) {
-      navigate('/delivery');
-    }
     navigate(location.pathname, { replace: true, state: null });
   }, [location.state]); // eslint-disable-line react-hooks/exhaustive-deps
-  const [pendingReview, setPendingReview] = useState<any>(null);
 
-  useEffect(() => {
-    if (!user || !token) return;
-    api.get('/api/reviews/pending', { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => setPendingReview(res.data))
-      .catch(() => {});
-  }, [user, token]);
   const [lunchTimer, setLunchTimer] = useState<string | null>(null);
   const [breakfastTimer, setBreakfastTimer] = useState<string | null>(null);
 
@@ -47,37 +34,33 @@ function App() {
     const update = () => {
       const now = new Date();
       const minskNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000 + 3 * 3600000);
-      const day = minskNow.getDay(); // 0=Вс, 1=Пн..5=Пт, 6=Сб
+      const day = minskNow.getDay();
       const total = minskNow.getHours() * 3600 + minskNow.getMinutes() * 60 + minskNow.getSeconds();
       const start = 12 * 3600;
       const end = 16 * 3600;
       const DAY = 24 * 3600;
 
-      // Бизнес-ланч Пн–Пт
       let lunch: string | null = null;
       if (day >= 1 && day <= 5) {
         if (total < start) {
           lunch = `До начала: ${fmt(start - total)}`;
         } else if (total < end) {
           lunch = `До окончания: ${fmt(end - total)}`;
-        } else if (day <= 4) { // Пн–Чт после 16:00 — следующий ланч завтра, всегда < 24ч
+        } else if (day <= 4) {
           lunch = `До следующего бизнес-ланча: ${fmt((DAY - total) + start)}`;
         }
-        // Пт после 16:00 — следующий в Пн, > 24ч, не показываем
       }
       setLunchTimer(lunch);
 
-      // Завтраки Сб–Вс
       let breakfast: string | null = null;
       if (day === 6 || day === 0) {
         if (total < start) {
           breakfast = `До начала: ${fmt(start - total)}`;
         } else if (total < end) {
           breakfast = `До окончания: ${fmt(end - total)}`;
-        } else if (day === 6) { // Сб после 16:00 — воскресенье, всегда < 24ч
+        } else if (day === 6) {
           breakfast = `До следующего завтрака: ${fmt((DAY - total) + start)}`;
         }
-        // Вс после 16:00 — следующий в Сб, > 24ч, не показываем
       }
       setBreakfastTimer(breakfast);
     };
@@ -89,40 +72,72 @@ function App() {
   const [isMusicOpen, setIsMusicOpen] = useState(false);
   const [isOfferOpen, setIsOfferOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   const heroTitleRef = useRef<HTMLHeadingElement>(null);
   const heroTitleImgRef = useRef<HTMLSpanElement>(null);
   const headerLogoRef = useRef<HTMLButtonElement>(null);
   const headerLogoImgRef = useRef<HTMLImageElement>(null);
   const layersRef = useRef<{ white: HTMLElement | null; gold: HTMLElement | null }>({ white: null, gold: null });
-  const naturalRef = useRef({ top: 0, height: 0, width: 0 });
-  const pinnedRef = useRef(false);
-  const [isPinned, setIsPinned] = useState(false);
+  const naturalRef = useRef({ top: 0, height: 0, width: 0, centerAbs: 0 });
+  const scrollLogoRef = useRef<HTMLButtonElement>(null);
+  const scrollLogoWhiteRef = useRef<HTMLImageElement>(null);
+  const scrollLogoGoldRef = useRef<HTMLImageElement>(null);
+  const scrollLogoPinnedRef = useRef(false);
 
-  // Замер натуральной геометрии hero-title (без transform) — на mount и при ресайзе.
-  // Делаем синхронно, до пейнта, чтобы scroll-обработчик сразу имел корректные данные.
-  useLayoutEffect(() => {
-    const measure = () => {
-      const titleEl = heroTitleRef.current;
-      const wrapper = heroTitleImgRef.current;
-      if (!titleEl || !wrapper) return;
-      // Снимаем transform чтобы получить именно натуральный bbox (transform у нас применяется к этому же span).
-      const prevTransform = wrapper.style.transform;
-      wrapper.style.transform = '';
-      const r = titleEl.getBoundingClientRect();
-      naturalRef.current = {
-        top: window.scrollY + r.top,
-        height: r.height,
-        width: wrapper.offsetWidth,
-      };
-      wrapper.style.transform = prevTransform;
+  const measureHeroLogo = useCallback(() => {
+    const titleEl = heroTitleRef.current;
+    const wrapper = heroTitleImgRef.current;
+    if (!titleEl || !wrapper) return;
+    const imgEl = wrapper.querySelector('img');
+    const imgRect = imgEl?.getBoundingClientRect();
+    const boxRect = titleEl.getBoundingClientRect();
+    const rect = imgRect && imgRect.width > 0 ? imgRect : boxRect;
+    naturalRef.current = {
+      top: window.scrollY + rect.top,
+      height: rect.height,
+      width: rect.width,
+      centerAbs: window.scrollY + rect.top + rect.height / 2,
     };
-    measure();
-    // Стартовая раскраска слоёв.
+  }, []);
+
+  const getHeaderLogoWidth = (img: HTMLImageElement) => {
+    const measured = img.offsetWidth || img.getBoundingClientRect().width;
+    if (measured) return measured;
+    return Math.min(220, Math.max(150, window.innerWidth * 0.14));
+  };
+
+  const resetWrapperStyles = (wrapper: HTMLElement) => {
+    wrapper.style.visibility = '';
+    wrapper.style.opacity = '';
+    wrapper.style.pointerEvents = '';
+  };
+
+  const hideScrollLogo = (el: HTMLButtonElement | null) => {
+    if (!el) return;
+    el.style.display = 'none';
+    el.style.pointerEvents = 'none';
+    el.classList.remove('scroll-logo--pinned');
+  };
+
+  const showScrollLogo = (
+    el: HTMLButtonElement,
+    top: number,
+    width: number,
+    pinned: boolean,
+  ) => {
+    el.style.display = 'block';
+    el.style.top = `${top}px`;
+    el.style.width = `${width}px`;
+    el.style.pointerEvents = pinned ? 'auto' : 'none';
+    el.classList.toggle('scroll-logo--pinned', pinned);
+    el.setAttribute('tabindex', pinned ? '0' : '-1');
+    el.setAttribute('aria-hidden', pinned ? 'false' : 'true');
+  };
+
+  useLayoutEffect(() => {
+    measureHeroLogo();
     const wrapper = heroTitleImgRef.current;
     if (wrapper) {
       const layers = wrapper.querySelectorAll<HTMLElement>('.hero-title-layer');
@@ -131,82 +146,90 @@ function App() {
       if (layersRef.current.white) layersRef.current.white.style.opacity = '1';
       if (layersRef.current.gold) layersRef.current.gold.style.opacity = '0';
     }
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, []);
+    window.addEventListener('resize', measureHeroLogo);
+    const remeasure = () => measureHeroLogo();
+    window.addEventListener('load', remeasure);
+    window.addEventListener('provans-preloader-done', remeasure);
+    const t = window.setTimeout(remeasure, 3500);
+    return () => {
+      window.removeEventListener('resize', measureHeroLogo);
+      window.removeEventListener('load', remeasure);
+      window.removeEventListener('provans-preloader-done', remeasure);
+      window.clearTimeout(t);
+    };
+  }, [measureHeroLogo]);
 
-  // Скролл-морфинг: три фазы, без translateY-погони за scrollY.
-  //   A) static  — лого в hero, никаких трансформов.
-  //   B) morph   — короткая зона перед хедером: только scale, без translate (натуральный скролл сам несёт элемент к месту шапки).
-  //   C) pinned  — за порогом: position: fixed на центре шапочного лого. Скролл вообще не влияет → дрожать нечему.
   useEffect(() => {
     const compute = () => {
       const wrapper = heroTitleImgRef.current;
       const headerLogo = headerLogoRef.current;
       const headerLogoImg = headerLogoImgRef.current;
-      if (!wrapper || !headerLogo || !headerLogoImg) return;
-      const { top, height, width: heroW } = naturalRef.current;
+      const scrollLogo = scrollLogoRef.current;
+      const scrollWhite = scrollLogoWhiteRef.current;
+      const scrollGold = scrollLogoGoldRef.current;
+      if (!wrapper || !headerLogo || !headerLogoImg || !scrollLogo) return;
+
+      if (!naturalRef.current.width) measureHeroLogo();
+
+      const { width: heroW, centerAbs } = naturalRef.current;
       if (!heroW) return;
 
       const headerLogoRect = headerLogo.getBoundingClientRect();
-      const headerW = headerLogoImg.offsetWidth;
-      if (!headerW) return;
-
+      const headerW = getHeaderLogoWidth(headerLogoImg);
       const headerCenterVP = headerLogoRect.top + headerLogoRect.height / 2;
-      const scaleEnd = headerW / heroW;
 
-      const titleCenterAbs = top + height / 2;
-      const triggerEnd = titleCenterAbs - headerCenterVP;
-      const morphRange = Math.min(window.innerHeight * 0.5, triggerEnd);
+      const triggerEnd = centerAbs - headerCenterVP;
+      if (triggerEnd <= 0) return;
+
+      const morphRange = Math.min(window.innerHeight * 0.55, triggerEnd);
       const morphStart = triggerEnd - morphRange;
 
       const sy = window.scrollY;
       const w = layersRef.current.white;
       const g = layersRef.current.gold;
-      let pinned = false;
 
       if (sy >= triggerEnd) {
-        // Фаза C: пин в шапку. Задаём явные размеры в px,
-        // иначе width/height: 100% у fixed-элемента считаются от viewport — лого раздувается.
-        wrapper.style.width = `${heroW}px`;
-        wrapper.style.height = `${height}px`;
-        wrapper.style.position = 'fixed';
-        wrapper.style.top = `${headerCenterVP}px`;
-        wrapper.style.left = '50%';
-        wrapper.style.transform = `translate(-50%, -50%) scale(${scaleEnd})`;
+        wrapper.style.visibility = 'hidden';
+        wrapper.style.opacity = '0';
+        wrapper.style.pointerEvents = 'none';
         if (w) w.style.opacity = '0';
         if (g) g.style.opacity = '1';
-        pinned = true;
+        if (scrollWhite) scrollWhite.style.opacity = '0';
+        if (scrollGold) scrollGold.style.opacity = '1';
+        showScrollLogo(scrollLogo, headerCenterVP, headerW, true);
+        if (!scrollLogoPinnedRef.current) {
+          scrollLogoPinnedRef.current = true;
+        }
       } else if (sy > morphStart) {
-        // Фаза B: морф-зона, только scale.
-        wrapper.style.width = '';
-        wrapper.style.height = '';
-        wrapper.style.position = '';
-        wrapper.style.top = '';
-        wrapper.style.left = '';
+        if (scrollLogoPinnedRef.current) {
+          scrollLogoPinnedRef.current = false;
+        }
+
         const progress = (sy - morphStart) / morphRange;
-        const scale = 1 - (1 - scaleEnd) * progress;
-        wrapper.style.transform = `scale(${scale})`;
-        if (w) w.style.opacity = String(1 - progress);
-        if (g) g.style.opacity = String(progress);
+        const currentW = heroW + (headerW - heroW) * progress;
+        const naturalCenterVP = centerAbs - sy;
+        const centerVP = naturalCenterVP + (headerCenterVP - naturalCenterVP) * progress;
+
+        wrapper.style.visibility = 'hidden';
+        wrapper.style.opacity = '0';
+        wrapper.style.pointerEvents = 'none';
+
+        showScrollLogo(scrollLogo, centerVP, currentW, false);
+        if (scrollWhite) scrollWhite.style.opacity = String(1 - progress);
+        if (scrollGold) scrollGold.style.opacity = String(progress);
+        if (w) w.style.opacity = '0';
+        if (g) g.style.opacity = '0';
       } else {
-        // Фаза A: статика.
-        wrapper.style.width = '';
-        wrapper.style.height = '';
-        wrapper.style.position = '';
-        wrapper.style.top = '';
-        wrapper.style.left = '';
-        wrapper.style.transform = '';
+        if (scrollLogoPinnedRef.current) {
+          scrollLogoPinnedRef.current = false;
+        }
+        hideScrollLogo(scrollLogo);
+        resetWrapperStyles(wrapper);
+        wrapper.style.pointerEvents = 'none';
         if (w) w.style.opacity = '1';
         if (g) g.style.opacity = '0';
       }
-
-      if (pinnedRef.current !== pinned) {
-        pinnedRef.current = pinned;
-        setIsPinned(pinned);
-      }
     };
-    // Без RAF: так transform применяется в той же фазе, что и scroll-paint, и нет лагa в кадр.
     compute();
     window.addEventListener('scroll', compute, { passive: true });
     window.addEventListener('resize', compute);
@@ -214,10 +237,10 @@ function App() {
       window.removeEventListener('scroll', compute);
       window.removeEventListener('resize', compute);
     };
-  }, []);
+  }, [measureHeroLogo]);
 
   const [bookingForm, setBookingForm] = useState({
-    date: '', time: '', guests: '', name: user?.name || '', phone: user?.phone || ''
+    date: '', time: '', guests: '', name: '', phone: ''
   });
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookingError, setBookingError] = useState('');
@@ -226,9 +249,7 @@ function App() {
     e.preventDefault();
     setBookingError('');
     try {
-      await api.post('/api/bookings', bookingForm, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {}
-      });
+      await api.post('/api/bookings', bookingForm);
       setBookingSuccess(true);
       setBookingForm({ date: '', time: '', guests: '', name: '', phone: '' });
       setTimeout(() => {
@@ -241,11 +262,7 @@ function App() {
   };
 
   const openBooking = () => {
-    setBookingForm({
-      date: '', time: '', guests: '',
-      name: user?.name || '',
-      phone: user?.phone || ''
-    });
+    setBookingForm({ date: '', time: '', guests: '', name: '', phone: '' });
     setBookingSuccess(false);
     setBookingError('');
     setIsBookingOpen(true);
@@ -253,20 +270,15 @@ function App() {
 
   return (
     <div className="app">
-      {/* Шапка */}
       <header className="header">
         <div className="nav-left">
           <button className="nav-btn" onClick={() => navigate('/gallery')}>Галерея</button>
-          <button className="nav-btn" onClick={() => document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })}>Контакты</button>
         </div>
         <button
           ref={headerLogoRef}
           className="logo"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          style={{
-            opacity: 0,
-            cursor: 'pointer',
-          }}
+          tabIndex={-1}
+          aria-hidden="true"
           aria-label="Наверх"
         >
           <img
@@ -277,71 +289,59 @@ function App() {
           />
         </button>
         <div className="nav-right">
-            <button type="button" className="delivery-link" onClick={() => navigate('/delivery')}>
-                Доставка
-            </button>
-          {user ? (
-            <button className="nav-btn nav-account-btn" onClick={() => setIsAccountOpen(true)}>
-              <span className="nav-account-avatar">{user.name.charAt(0).toUpperCase()}</span>
-              {user.name}
-            </button>
-          ) : (
-            <button className="nav-btn" onClick={() => setIsAuthOpen(true)}>Войти</button>
-          )}
+          <button className="nav-btn" onClick={() => document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' })}>Контакты</button>
           <button className="burger" onClick={() => setIsMenuOpen(!isMenuOpen)}>☰</button>
         </div>
       </header>
 
-      {/* Мобильное меню */}
+      {createPortal(
+        <button
+          ref={scrollLogoRef}
+          type="button"
+          className="scroll-logo"
+          style={{ display: 'none' }}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Наверх"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
+          <span className="scroll-logo-inner">
+            <img
+              ref={scrollLogoWhiteRef}
+              src={whiteLogoCropped}
+              alt=""
+              aria-hidden="true"
+              className="scroll-logo-layer"
+            />
+            <img
+              ref={scrollLogoGoldRef}
+              src={provansCroppedLogo}
+              alt="Прованс"
+              className="scroll-logo-layer scroll-logo-layer--gold"
+            />
+          </span>
+        </button>,
+        document.body
+      )}
+
       {isMenuOpen && (
         <div className="mobile-menu">
-          <button className="mobile-menu-btn">Главная</button>
-          <button className="mobile-menu-btn">О нас</button>
-          <button className="mobile-menu-btn">Галерея</button>
-          <button className="mobile-menu-btn">Контакты</button>
-          <button type="button" className="mobile-delivery" onClick={() => navigate('/delivery')}>
-            Доставка
-          </button>
-          {user ? (
-            <button className="mobile-menu-btn" onClick={() => { setIsAccountOpen(true); setIsMenuOpen(false); }}>
-              Личный кабинет
-            </button>
-          ) : (
-            <button className="mobile-menu-btn" onClick={() => { setIsAuthOpen(true); setIsMenuOpen(false); }}>
-              Войти
-            </button>
-          )}
+          <button className="mobile-menu-btn" onClick={() => { setIsMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Главная</button>
+          <button className="mobile-menu-btn" onClick={() => { setIsMenuOpen(false); navigate('/gallery'); }}>Галерея</button>
+          <button className="mobile-menu-btn" onClick={() => { setIsMenuOpen(false); document.getElementById('contacts')?.scrollIntoView({ behavior: 'smooth' }); }}>Контакты</button>
         </div>
       )}
 
-      {/* Главный экран */}
       <section className="hero">
+        <HeroBackground />
         <div className="hero-overlay">
           <h1 className="hero-title" ref={heroTitleRef}>
             <span
               ref={heroTitleImgRef}
               className="hero-title-image"
-              style={{
-                cursor: isPinned ? 'pointer' : 'default',
-                pointerEvents: isPinned ? 'auto' : 'none',
-              }}
-              onClick={() => {
-                if (isPinned) {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
             >
-              <img
-                src={whiteLogoCropped}
-                alt="Прованс"
-                className="hero-title-layer"
-              />
-              <img
-                src={provansCroppedLogo}
-                alt=""
-                aria-hidden="true"
-                className="hero-title-layer"
-              />
+              <img src={whiteLogoCropped} alt="Прованс" className="hero-title-layer" />
+              <img src={provansCroppedLogo} alt="" aria-hidden="true" className="hero-title-layer" />
             </span>
           </h1>
           <p className="hero-subtitle">
@@ -358,7 +358,6 @@ function App() {
         </div>
       </section>
 
-      {/* Сегодня в ресторане */}
       <section className="today">
         <h2 className="section-title">Сегодня в ресторане</h2>
         <div className="today-cards">
@@ -371,23 +370,21 @@ function App() {
         </div>
       </section>
 
-      {/* Галерея */}
       <section className="gallery">
         <h2 className="section-title">Атмосфера</h2>
-        <div className="gallery-grid">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="gallery-item"
-              onClick={() => setSelectedImage(i)}
-            >
-              <img src={`${process.env.PUBLIC_URL}/interior${i}.jpg`} alt={`Интерьер ${i}`} className="gallery-img" />
-            </div>
-          ))}
-        </div>
+        {HOME_GALLERY_PHOTOS.length === 0 ? (
+          <p className="gallery-empty">Фотографии скоро появятся</p>
+        ) : (
+          <div className="gallery-grid">
+            {HOME_GALLERY_PHOTOS.map((filename) => (
+              <div key={filename} className="gallery-item" onClick={() => setSelectedImage(filename)}>
+                <img src={galleryPhotoUrl(filename)} alt="Интерьер Прованс" className="gallery-img" />
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* Контакты */}
       <section className="contacts" id="contacts">
         <h2 className="section-title">Контакты</h2>
         <div className="contacts-container">
@@ -413,21 +410,20 @@ function App() {
               <span>Бизнес-ланчи: Пн-Пт 12:00-16:00</span>
             </div>
             <div className="contact-item">
-              <span className="contact-icon">📷</span>
-              <a
-                href="https://www.instagram.com/provansgomel/?hl=ru"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-link"
-              >
+              <span className="contact-icon contact-icon--svg" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 11-2.881.001 1.44 1.44 0 012.881-.001z" />
+                </svg>
+              </span>
+              <a href="https://www.instagram.com/provansgomel/?hl=ru" target="_blank" rel="noopener noreferrer" className="contact-link">
                 @provansgomel
               </a>
             </div>
             <div className="contact-item">
-              <span className="contact-icon">🚚</span>
-              <button type="button" className="contact-link contact-link-button" onClick={() => navigate('/delivery')}>
-                Заказать доставку
-              </button>
+              <span className="contact-icon" aria-hidden="true">🚚</span>
+              <a href="https://just-eat.by/provence-gomel" target="_blank" rel="noopener noreferrer" className="contact-link">
+                Доставка
+              </a>
             </div>
           </div>
           <div className="contacts-map">
@@ -444,29 +440,12 @@ function App() {
         </div>
       </section>
 
-      {/* Подвал */}
       <footer className="footer">
         <div className="footer-content">
           <p className="footer-copy">© 2026 Прованс. Все права защищены</p>
-          <div className="footer-social">
-            <a
-              href="https://www.instagram.com/provansgomel/?hl=ru"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="social-btn"
-              aria-label="Instagram"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                <circle cx="12" cy="12" r="4"/>
-                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
-              </svg>
-            </a>
-          </div>
         </div>
       </footer>
 
-      {/* Модалка бронирования */}
       {isBookingOpen && (
         <div className="modal-overlay" onMouseDown={() => setIsBookingOpen(false)}>
           <div className="modal-content" onMouseDown={(e) => e.stopPropagation()}>
@@ -475,58 +454,13 @@ function App() {
               <p className="booking-success">Столик успешно забронирован!</p>
             ) : (
               <form className="modal-form" onSubmit={handleBookingSubmit}>
-                <input
-                  type="date"
-                  className="modal-input"
-                  value={bookingForm.date}
-                  onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })}
-                  required
-                />
-                <input
-                  type="time"
-                  className="modal-input"
-                  value={bookingForm.time}
-                  onChange={e => setBookingForm({ ...bookingForm, time: e.target.value })}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Количество гостей"
-                  className="modal-input"
-                  min="1"
-                  max="20"
-                  value={bookingForm.guests}
-                  onChange={e => setBookingForm({ ...bookingForm, guests: e.target.value })}
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Ваше имя"
-                  className="modal-input"
-                  value={bookingForm.name}
-                  onChange={e => setBookingForm({ ...bookingForm, name: e.target.value })}
-                  required
-                />
-                <input
-                  type="tel"
-                  placeholder="Телефон"
-                  className="modal-input"
-                  value={bookingForm.phone}
-                  onChange={e => setBookingForm({ ...bookingForm, phone: e.target.value })}
-                  required
-                />
-                {bookingError && <p className="auth-error">{bookingError}</p>}
-                {!user && (
-                  <p className="booking-hint">
-                    <button type="button" className="booking-hint-link" onClick={() => { setIsBookingOpen(false); setIsAuthOpen(true); }}>
-                      Войдите
-                    </button>
-                    {' '}чтобы сохранить бронирование в личном кабинете
-                  </p>
-                )}
-                <button type="submit" className="modal-submit">
-                  Забронировать
-                </button>
+                <input type="date" className="modal-input" value={bookingForm.date} onChange={e => setBookingForm({ ...bookingForm, date: e.target.value })} required />
+                <input type="time" className="modal-input" value={bookingForm.time} onChange={e => setBookingForm({ ...bookingForm, time: e.target.value })} required />
+                <input type="number" placeholder="Количество гостей" className="modal-input" min="1" max="20" value={bookingForm.guests} onChange={e => setBookingForm({ ...bookingForm, guests: e.target.value })} required />
+                <input type="text" placeholder="Ваше имя" className="modal-input" value={bookingForm.name} onChange={e => setBookingForm({ ...bookingForm, name: e.target.value })} required />
+                <input type="tel" placeholder="Телефон" className="modal-input" value={bookingForm.phone} onChange={e => setBookingForm({ ...bookingForm, phone: e.target.value })} required />
+                {bookingError && <p className="form-error">{bookingError}</p>}
+                <button type="submit" className="modal-submit">Забронировать</button>
               </form>
             )}
             <button className="modal-close" onClick={() => setIsBookingOpen(false)}>×</button>
@@ -534,21 +468,15 @@ function App() {
         </div>
       )}
 
-      {/* Модалка галереи */}
       {selectedImage && (
         <div className="modal-overlay" onMouseDown={() => setSelectedImage(null)}>
           <div className="modal-content image-modal" onMouseDown={(e) => e.stopPropagation()}>
-            <img
-              src={`${process.env.PUBLIC_URL}/interior${selectedImage}.jpg`}
-              alt={`Прованс фото ${selectedImage}`}
-              className="modal-image"
-            />
+            <img src={galleryPhotoUrl(selectedImage)} alt="Прованс" className="modal-image" />
             <button className="modal-close" onClick={() => setSelectedImage(null)}>×</button>
           </div>
         </div>
       )}
 
-      {/* Модалка живой музыки */}
       {isMusicOpen && (
         <div className="modal-overlay" onMouseDown={() => setIsMusicOpen(false)}>
           <div className="modal-content today-modal" onMouseDown={(e) => e.stopPropagation()}>
@@ -565,7 +493,6 @@ function App() {
         </div>
       )}
 
-      {/* Модалка спец. предложения */}
       {isOfferOpen && (
         <div className="modal-overlay" onMouseDown={() => setIsOfferOpen(false)}>
           <div className="modal-content today-modal" onMouseDown={(e) => e.stopPropagation()}>
@@ -580,20 +507,6 @@ function App() {
             <button className="modal-close" onClick={() => setIsOfferOpen(false)}>×</button>
           </div>
         </div>
-      )}
-
-      {/* Модалка авторизации */}
-      {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
-
-      {/* Модалка личного кабинета */}
-      {isAccountOpen && <AccountModal onClose={() => setIsAccountOpen(false)} />}
-
-      {/* Модалка отзыва */}
-      {pendingReview && (
-        <ReviewModal
-          booking={pendingReview}
-          onDone={() => setPendingReview(null)}
-        />
       )}
     </div>
   );

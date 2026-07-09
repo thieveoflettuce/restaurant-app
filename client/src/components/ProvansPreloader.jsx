@@ -126,7 +126,10 @@ export default function ProvansPreloader({
         // Fallback — просто fade-out.
         setBgFading(true);
         setPhase('morphing');
-        setTimeout(() => onFinished && onFinished(), fadeOut);
+        setTimeout(() => {
+          onFinished && onFinished();
+          window.dispatchEvent(new Event('provans-preloader-done'));
+        }, fadeOut);
         return;
       }
 
@@ -160,6 +163,7 @@ export default function ProvansPreloader({
           targetElRef.current = null;
         }
         onFinished && onFinished();
+        window.dispatchEvent(new Event('provans-preloader-done'));
       }, morphDuration);
     }, wait);
 
